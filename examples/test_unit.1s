@@ -1,0 +1,6 @@
+-- unit: quote top
+-- [A] unit == [[A]]
+1 unit
+[ 2 ] unit
+[ 3 4 ] unit
+[ 5 [ 6 ] ] unit

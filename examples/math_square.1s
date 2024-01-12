@@ -1,0 +1,2 @@
+[ dup * ] [ square ] :
+21 square

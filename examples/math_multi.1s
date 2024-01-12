@@ -1,0 +1,8 @@
+[ 2 * ] [ double ] :
+[ dup * ] [ square ] :
+[ 2 * dup * ] [ double-square ] :
+
+7 double
+7 square
+7 double square
+7 double-square
