@@ -1,0 +1,21 @@
+[package]
+name = "one_stack"
+license-file = "LICENSE"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+pico-args = "0.5.0"
+rustyline = "13.0.0"
+snafu = "0.8.0"
+log = "0.4.20"
+
+[profile.release]
+strip = true
+lto = true
+
+[[bin]]
+name = "1s"
+path = "src/main.rs"

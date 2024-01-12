@@ -1,0 +1,19 @@
+[ {:} ] [ : ] {:}
+
+-- minimal set: cons, sip, k
+[ {CONS} ] [ cons ] :
+[ {SIP} ] [ sip ] :
+[ {K} ] [ k ] :
+
+[ [ ] sip ] [ dup ] :
+[ [ ] sip k ] [ i ] :
+[ [ ] cons ] [ unit ] :
+[ [ ] k ] [ zap ] :
+
+[ [ [ cons zap ] sip i ] cons sip ] [ dip ] :
+
+[ [ [ i ] dip i ] cons cons ] [ cat ] :
+[ unit dip ] [ swap ] :
+
+[ {+} ] [ + ] :
+[ {*} ] [ * ] :
