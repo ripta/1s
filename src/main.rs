@@ -694,13 +694,13 @@ fn eval(mut state: State) -> Result<State> {
                 word: word,
                 location: item.location,
             })? {
+                Code::Native(_, f) => {
+                    state = f(state)?;
+                }
                 Code::Program(ps) => {
                     let mut prog = ps.clone();
                     prog.reverse();
                     state.program.append(prog.as_mut());
-                }
-                Code::Native(_, f) => {
-                    state = f(state)?;
                 }
             }
         }
