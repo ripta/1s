@@ -267,6 +267,22 @@ fn builtin_add(mut state: State) -> Result<State> {
     return Ok(state);
 }
 
+fn builtin_const_pi(mut state: State) -> Result<State> {
+    state.stack.push(ParseNode {
+        kind: ParseKind::FloatValue(std::f64::consts::PI),
+        location: state.clone().location,
+    });
+    return Ok(state);
+}
+
+fn builtin_const_sqrt2(mut state: State) -> Result<State> {
+    state.stack.push(ParseNode {
+        kind: ParseKind::FloatValue(std::f64::consts::SQRT_2),
+        location: state.clone().location,
+    });
+    return Ok(state);
+}
+
 // -- [B] [A] cons == [[B] A]
 fn builtin_cons(mut state: State) -> Result<State> {
     let a = get_block(state.stack.pop().ok_or(EvaluationError::StackUnderflow)?)?;
@@ -600,6 +616,9 @@ impl State {
 
         defs.insert("{+}".to_string(), Code::Native("{+}".to_string(), builtin_add));
         defs.insert("{*}".to_string(), Code::Native("{*}".to_string(), builtin_mul));
+
+        defs.insert("√2".to_string(), Code::Native("√2".to_string(), builtin_const_sqrt2));
+        defs.insert("π".to_string(), Code::Native("π".to_string(), builtin_const_pi));
 
         return State {
             counter: (0usize, 0usize),
