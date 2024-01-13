@@ -247,8 +247,14 @@ fn get_word(s: ParseNode) -> Result<String> {
     }
 }
 
+macro_rules! checked_pop {
+    ( $e:expr ) => {
+        $e.stack.pop().ok_or(EvaluationError::StackUnderflow)?
+    };
+}
+
 fn builtin_add(mut state: State) -> Result<State> {
-    let node = state.stack.pop().ok_or(EvaluationError::StackUnderflow)?;
+    let node = checked_pop!(state);
     state = match node.kind {
         ParseKind::Block(b) => {
             let vals = b.iter().map(get_integer).collect::<Result<Vec<i64>>>()?;
@@ -261,7 +267,7 @@ fn builtin_add(mut state: State) -> Result<State> {
         }
 
         ParseKind::FloatValue(a) => {
-            let b = get_float(&state.stack.pop().ok_or(EvaluationError::StackUnderflow)?)?;
+            let b = get_float(&checked_pop!(state))?;
             state.stack.push(ParseNode {
                 kind: ParseKind::FloatValue(a + b),
                 location: state.clone().location,
@@ -270,7 +276,7 @@ fn builtin_add(mut state: State) -> Result<State> {
         }
 
         ParseKind::IntegerValue(a) => {
-            let b = get_integer(&state.stack.pop().ok_or(EvaluationError::StackUnderflow)?)?;
+            let b = get_integer(&checked_pop!(state))?;
             state.stack.push(ParseNode {
                 kind: ParseKind::IntegerValue(a + b),
                 location: state.clone().location,
@@ -305,8 +311,8 @@ fn builtin_const_sqrt2(mut state: State) -> Result<State> {
 
 // -- [B] [A] cons == [[B] A]
 fn builtin_cons(mut state: State) -> Result<State> {
-    let a = get_block(state.stack.pop().ok_or(EvaluationError::StackUnderflow)?)?;
-    let b = state.stack.pop().ok_or(EvaluationError::StackUnderflow)?;
+    let a = get_block(checked_pop!(state))?;
+    let b = checked_pop!(state);
 
     // let n = Vec::from(VecDeque::from(a).push_front(b.clone()));
     let mut n: Vec<ParseNode> = Vec::with_capacity(a.len() + 1);
@@ -322,8 +328,8 @@ fn builtin_cons(mut state: State) -> Result<State> {
 }
 
 fn builtin_define(mut state: State) -> Result<State> {
-    let mut syms = get_block(state.stack.pop().ok_or(EvaluationError::StackUnderflow)?)?;
-    let body = get_block(state.stack.pop().ok_or(EvaluationError::StackUnderflow)?)?;
+    let mut syms = get_block(checked_pop!(state))?;
+    let body = get_block(checked_pop!(state))?;
 
     let sym = get_word(syms.pop().ok_or(EvaluationError::StackUnderflow)?)?;
     state.definitions.insert(sym, Code::Program(body));
@@ -331,7 +337,7 @@ fn builtin_define(mut state: State) -> Result<State> {
 }
 
 fn builtin_mul(mut state: State) -> Result<State> {
-    let node = state.stack.pop().ok_or(EvaluationError::StackUnderflow)?;
+    let node = checked_pop!(state);
     state = match node.kind {
         ParseKind::Block(b) => {
             let vals = b.iter().map(get_integer).collect::<Result<Vec<i64>>>()?;
@@ -344,7 +350,7 @@ fn builtin_mul(mut state: State) -> Result<State> {
         }
 
         ParseKind::FloatValue(a) => {
-            let b = get_float(&state.stack.pop().ok_or(EvaluationError::StackUnderflow)?)?;
+            let b = get_float(&checked_pop!(state))?;
             state.stack.push(ParseNode {
                 kind: ParseKind::FloatValue(a * b),
                 location: node.location,
@@ -353,7 +359,7 @@ fn builtin_mul(mut state: State) -> Result<State> {
         }
 
         ParseKind::IntegerValue(a) => {
-            let b = get_integer(&state.stack.pop().ok_or(EvaluationError::StackUnderflow)?)?;
+            let b = get_integer(&checked_pop!(state))?;
             state.stack.push(ParseNode {
                 kind: ParseKind::IntegerValue(a * b),
                 location: node.location,
@@ -371,8 +377,8 @@ fn builtin_mul(mut state: State) -> Result<State> {
 }
 
 fn builtin_k(mut state: State) -> Result<State> {
-    let mut a = get_block(state.stack.pop().ok_or(EvaluationError::StackUnderflow)?)?;
-    let _b = get_block(state.stack.pop().ok_or(EvaluationError::StackUnderflow)?)?;
+    let mut a = get_block(checked_pop!(state))?;
+    let _b = get_block(checked_pop!(state))?;
 
     state.program.append(&mut a);
 
@@ -380,8 +386,8 @@ fn builtin_k(mut state: State) -> Result<State> {
 }
 
 fn builtin_sip(mut state: State) -> Result<State> {
-    let a = get_block(state.stack.pop().ok_or(EvaluationError::StackUnderflow)?)?;
-    let b = state.stack.pop().ok_or(EvaluationError::StackUnderflow)?;
+    let a = get_block(checked_pop!(state))?;
+    let b = checked_pop!(state);
 
     // TODO(ripta): execute A
     let mut res = a;
