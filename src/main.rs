@@ -214,6 +214,17 @@ fn get_block(s: ParseNode) -> Result<Vec<ParseNode>> {
     }
 }
 
+fn get_float(s: &ParseNode) -> Result<f64> {
+    match s.clone().kind {
+        ParseKind::FloatValue(f) => Ok(f),
+        otherwise => IncompatibleValueSnafu {
+            expected: "float",
+            found: otherwise.to_string(),
+        }
+        .fail(),
+    }
+}
+
 fn get_integer(s: &ParseNode) -> Result<i64> {
     match s.clone().kind {
         ParseKind::IntegerValue(i) => Ok(i),
@@ -245,6 +256,15 @@ fn builtin_add(mut state: State) -> Result<State> {
             state.stack.push(ParseNode {
                 kind: ParseKind::IntegerValue(sum),
                 location: node.location,
+            });
+            Ok(state)
+        }
+
+        ParseKind::FloatValue(a) => {
+            let b = get_float(&state.stack.pop().ok_or(EvaluationError::StackUnderflow)?)?;
+            state.stack.push(ParseNode {
+                kind: ParseKind::FloatValue(a + b),
+                location: state.clone().location,
             });
             Ok(state)
         }
@@ -318,6 +338,15 @@ fn builtin_mul(mut state: State) -> Result<State> {
             let sum = vals.iter().fold(0, |acc, v| acc * v);
             state.stack.push(ParseNode {
                 kind: ParseKind::IntegerValue(sum),
+                location: node.location,
+            });
+            Ok(state)
+        }
+
+        ParseKind::FloatValue(a) => {
+            let b = get_float(&state.stack.pop().ok_or(EvaluationError::StackUnderflow)?)?;
+            state.stack.push(ParseNode {
+                kind: ParseKind::FloatValue(a * b),
                 location: node.location,
             });
             Ok(state)
