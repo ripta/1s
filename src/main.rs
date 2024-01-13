@@ -420,6 +420,9 @@ fn is_integer(word: String) -> bool {
     if word.chars().all(|c| c.is_ascii_digit()) {
         return true;
     }
+    if word.contains('.') {
+        return false;
+    }
     if word.starts_with('-') {
         return match word.chars().nth(1) {
             Some(c) if c.is_ascii_digit() => true,
