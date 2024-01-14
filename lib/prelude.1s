@@ -16,4 +16,15 @@
 [ unit dip ] [ swap ] :
 
 [ {+} ] [ + ] :
+[ {-} ] [ - ] :
 [ {*} ] [ * ] :
+[ {/} ] [ / ] :
+[ {%} ] [ % ] :
+
+[ {⌊} ] [ ⌊ ] :
+[ {⌊} ] [ ⌋ ] :
+[ {⌈} ] [ ⌈ ] :
+[ {⌈} ] [ ⌉ ] :
+
+-- ensure stack is empty after evaluation this file
+{ø}
