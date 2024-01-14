@@ -407,7 +407,7 @@ fn is_float(word: String) -> bool {
     if word.chars().all(|c| matches!(c, '0'..='9' | '.')) {
         return true;
     }
-    if word.starts_with('-') {
+    if word.starts_with('-') && word.len() > 1 {
         return match word.chars().nth(1) {
             Some(c) if c.is_ascii_digit() => true,
             _ => false,
@@ -423,7 +423,7 @@ fn is_integer(word: String) -> bool {
     if word.contains('.') {
         return false;
     }
-    if word.starts_with('-') {
+    if word.starts_with('-') && word.len() > 1 {
         return match word.chars().nth(1) {
             Some(c) if c.is_ascii_digit() => true,
             _ => false,
@@ -473,7 +473,7 @@ fn lex(content: String) -> Result<Vec<Token>> {
             }
 
             // TODO(ripta): stop compressing away multiple whitespace characters in comments
-            if word.chars().all(|c| c == '-') {
+            if word.len() >= 2 && word.chars().all(|c| c == '-') {
                 in_comment = true;
                 comment_word_num = word_num;
                 buf.push_str(&word);
