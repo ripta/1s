@@ -119,10 +119,14 @@ fn run_string(state: State, content: String, trace_exec: bool) -> Result<State> 
     let mut prog = pt.top_level.clone();
     prog.reverse();
 
-    let mut s = State::with(state, prog);
+    let s = State::with(state, prog);
+    return run_state(s, trace_exec);
+}
+
+fn run_state(mut s: State, trace_exec: bool) -> Result<State> {
     // println!("Pre-eval: {:?}", state);
     while !s.program.is_empty() {
-        s = eval(s.clone())?;
+        s = eval(s)?;
 
         if trace_exec {
             println!("Step {:?}", s.counter);
