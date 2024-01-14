@@ -177,6 +177,8 @@ type Result<T> = result::Result<T, EvaluationError>;
 
 #[derive(Debug, Snafu)]
 enum EvaluationError {
+    #[snafu(display("guard violation: {reason}"))]
+    GuardViolation { reason: String },
     #[snafu(display("invalid command line flag"))]
     InvalidFlag { source: pico_args::Error },
     #[snafu(display("cannot load file '{filename}'"))]
@@ -293,6 +295,26 @@ fn builtin_add(mut state: State) -> Result<State> {
     return Ok(state);
 }
 
+fn builtin_ceil(mut state: State) -> Result<State> {
+    let node = checked_pop!(state);
+    state = match node.kind {
+        ParseKind::FloatValue(a) => {
+            state.stack.push(ParseNode {
+                kind: ParseKind::FloatValue(a.ceil()),
+                location: node.location,
+            });
+            Ok(state)
+        }
+
+        _ => Err(EvaluationError::CannotOperate {
+            op: "{⌈}".to_string(),
+            value: node.clone(),
+        }),
+    }?;
+
+    return Ok(state);
+}
+
 fn builtin_const_pi(mut state: State) -> Result<State> {
     state.stack.push(ParseNode {
         kind: ParseKind::FloatValue(std::f64::consts::PI),
@@ -336,6 +358,106 @@ fn builtin_define(mut state: State) -> Result<State> {
     return Ok(state);
 }
 
+fn builtin_div(mut state: State) -> Result<State> {
+    let node = checked_pop!(state);
+    state = match node.kind {
+        ParseKind::Block(b) => {
+            let vals = b.iter().map(get_integer).collect::<Result<Vec<i64>>>()?;
+            let sum = vals.iter().fold(0, |acc, v| acc / v);
+            state.stack.push(ParseNode {
+                kind: ParseKind::IntegerValue(sum),
+                location: node.location,
+            });
+            Ok(state)
+        }
+
+        ParseKind::FloatValue(a) => {
+            let b = get_float(&checked_pop!(state))?;
+            state.stack.push(ParseNode {
+                kind: ParseKind::FloatValue(a / b),
+                location: node.location,
+            });
+            Ok(state)
+        }
+
+        ParseKind::IntegerValue(a) => {
+            let b = get_integer(&checked_pop!(state))?;
+            state.stack.push(ParseNode {
+                kind: ParseKind::IntegerValue(a / b),
+                location: node.location,
+            });
+            Ok(state)
+        }
+
+        _ => Err(EvaluationError::CannotOperate {
+            op: "{/}".to_string(),
+            value: node.clone(),
+        }),
+    }?;
+
+    return Ok(state);
+}
+
+fn builtin_floor(mut state: State) -> Result<State> {
+    let node = checked_pop!(state);
+    state = match node.kind {
+        ParseKind::FloatValue(a) => {
+            state.stack.push(ParseNode {
+                kind: ParseKind::FloatValue(a.floor()),
+                location: node.location,
+            });
+            Ok(state)
+        }
+
+        _ => Err(EvaluationError::CannotOperate {
+            op: "{⌊}".to_string(),
+            value: node.clone(),
+        }),
+    }?;
+
+    return Ok(state);
+}
+
+fn builtin_mod(mut state: State) -> Result<State> {
+    let node = checked_pop!(state);
+    state = match node.kind {
+        ParseKind::Block(b) => {
+            let vals = b.iter().map(get_integer).collect::<Result<Vec<i64>>>()?;
+            let sum = vals.iter().fold(0, |acc, v| acc % v);
+            state.stack.push(ParseNode {
+                kind: ParseKind::IntegerValue(sum),
+                location: node.location,
+            });
+            Ok(state)
+        }
+
+        ParseKind::FloatValue(a) => {
+            let b = get_float(&checked_pop!(state))?;
+            state.stack.push(ParseNode {
+                kind: ParseKind::FloatValue(a % b),
+                location: node.location,
+            });
+            Ok(state)
+        }
+
+        ParseKind::IntegerValue(a) => {
+            let b = get_integer(&checked_pop!(state))?;
+            state.stack.push(ParseNode {
+                kind: ParseKind::IntegerValue(a % b),
+                location: node.location,
+            });
+            Ok(state)
+        }
+
+        _ => Err(EvaluationError::CannotOperate {
+            op: "{%}".to_string(),
+            value: node.clone(),
+        }),
+    }?;
+
+    return Ok(state);
+}
+
 fn builtin_mul(mut state: State) -> Result<State> {
     let node = checked_pop!(state);
     state = match node.kind {
@@ -369,6 +491,55 @@ fn builtin_mul(mut state: State) -> Result<State> {
 
         _ => Err(EvaluationError::CannotOperate {
             op: "{*}".to_string(),
+            value: node.clone(),
+        }),
+    }?;
+
+    return Ok(state);
+}
+
+fn builtin_stack_empty(mut state: crate::State) -> Result<crate::State> {
+    if state.stack.is_empty() {
+        return Ok(state);
+    }
+    return Err(EvaluationError::GuardViolation {
+        reason: "stack is not empty".to_string(),
+    });
+}
+
+fn builtin_sub(mut state: State) -> Result<State> {
+    let node = checked_pop!(state);
+    state = match node.kind {
+        ParseKind::Block(b) => {
+            let vals = b.iter().map(get_integer).collect::<Result<Vec<i64>>>()?;
+            let sum = vals.iter().fold(0, |acc, v| acc - v);
+            state.stack.push(ParseNode {
+                kind: ParseKind::IntegerValue(sum),
+                location: node.location,
+            });
+            Ok(state)
+        }
+
+        ParseKind::FloatValue(a) => {
+            let b = get_float(&checked_pop!(state))?;
+            state.stack.push(ParseNode {
+                kind: ParseKind::FloatValue(a - b),
+                location: node.location,
+            });
+            Ok(state)
+        }
+
+        ParseKind::IntegerValue(a) => {
+            let b = get_integer(&checked_pop!(state))?;
+            state.stack.push(ParseNode {
+                kind: ParseKind::IntegerValue(a - b),
+                location: node.location,
+            });
+            Ok(state)
+        }
+
+        _ => Err(EvaluationError::CannotOperate {
+            op: "{-}".to_string(),
             value: node.clone(),
         }),
     }?;
@@ -648,12 +819,19 @@ impl State {
         let mut defs = HashMap::with_capacity(64);
 
         defs.insert("{:}".to_string(), Code::Native("{:}".to_string(), builtin_define));
+        defs.insert("{ø}".to_string(), Code::Native("{ø}".to_string(), builtin_stack_empty));
         defs.insert("{CONS}".to_string(), Code::Native("{CONS}".to_string(), builtin_cons));
         defs.insert("{K}".to_string(), Code::Native("{K}".to_string(), builtin_k));
         defs.insert("{SIP}".to_string(), Code::Native("{SIP}".to_string(), builtin_sip));
 
         defs.insert("{+}".to_string(), Code::Native("{+}".to_string(), builtin_add));
+        defs.insert("{/}".to_string(), Code::Native("{/}".to_string(), builtin_div));
+        defs.insert("{%}".to_string(), Code::Native("{%}".to_string(), builtin_mod));
         defs.insert("{*}".to_string(), Code::Native("{*}".to_string(), builtin_mul));
+        defs.insert("{-}".to_string(), Code::Native("{-}".to_string(), builtin_sub));
+
+        defs.insert("{⌈}".to_string(), Code::Native("{⌈}".to_string(), builtin_ceil));
+        defs.insert("{⌊}".to_string(), Code::Native("{⌊}".to_string(), builtin_floor));
 
         defs.insert("√2".to_string(), Code::Native("√2".to_string(), builtin_const_sqrt2));
         defs.insert("π".to_string(), Code::Native("π".to_string(), builtin_const_pi));
