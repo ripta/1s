@@ -69,7 +69,11 @@ fn run(flags: Flags) -> Result<u8> {
                     // println!("{}", line);
                     match run_string(state.clone(), line, flags.trace_exec) {
                         Ok(ns) => {
-                            println!("Stack: {:?}", ns.stack);
+                            println!("Stack: ");
+                            for st in &ns.stack {
+                                println!("  {}", st);
+                            }
+
                             state = ns;
                         }
                         Err(EvaluationError::UndefinedWord { word, location: _ }) => {
@@ -124,7 +128,15 @@ fn run_string(state: State, content: String, trace_exec: bool) -> Result<State> 
 }
 
 fn run_state(mut s: State, trace_exec: bool) -> Result<State> {
-    // println!("Pre-eval: {:?}", state);
+    if trace_exec {
+        println!("Pre-eval {:?}", s.counter);
+        println!("  Stack: {:?}", s.stack);
+        println!("  Program: {:?}", s.program);
+
+        println!("  Definitions: {:?}", dump_definitions(s.clone().definitions));
+        print!("\n");
+    }
+
     while !s.program.is_empty() {
         s = eval(s)?;
 
@@ -502,7 +514,7 @@ fn builtin_mul(mut state: State) -> Result<State> {
     return Ok(state);
 }
 
-fn builtin_stack_empty(mut state: crate::State) -> Result<crate::State> {
+fn builtin_stack_empty(state: crate::State) -> Result<crate::State> {
     if state.stack.is_empty() {
         return Ok(state);
     }
@@ -555,6 +567,7 @@ fn builtin_k(mut state: State) -> Result<State> {
     let mut a = get_block(checked_pop!(state))?;
     let _b = get_block(checked_pop!(state))?;
 
+    a.reverse();
     state.program.append(&mut a);
 
     return Ok(state);
@@ -564,12 +577,11 @@ fn builtin_sip(mut state: State) -> Result<State> {
     let a = get_block(checked_pop!(state))?;
     let b = checked_pop!(state);
 
-    // TODO(ripta): execute A
-    let mut res = a;
-
     state.stack.push(b.clone());
-    state.stack.append(&mut res);
-    state.stack.push(b.clone());
+    state.program.push(b.clone());
+    let mut p = a.clone();
+    p.reverse();
+    state.program.extend(p);
 
     return Ok(state);
 }
@@ -721,7 +733,21 @@ struct ParseNode {
 
 impl Display for ParseNode {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "{:?}", self)
+        match &self.kind {
+            ParseKind::Block(vs) => {
+                write!(f, "[ ")?;
+                for v in vs {
+                    write!(f, "{} ", v)?;
+                }
+                write!(f, "]")?;
+                Ok(())
+            }
+            ParseKind::FloatValue(v) => write!(f, "{:?}::f64", v),
+            ParseKind::IntegerValue(v) => write!(f, "{:?}::i64", v),
+            ParseKind::StringValue(v) => write!(f, "{:?}", v),
+            ParseKind::WordRef(v) => write!(f, "{}", v),
+            // _ => write!(f, "{:?}", self),
+        }
     }
 }
 
