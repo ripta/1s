@@ -1,20 +1,92 @@
+-- Prelude from a minimal base {CONS, SIP, K}, plus various arithmetic operations.
+
+-- (1) Binding
+-- [BODY*] [NAME] {:} == ø
+--
+-- {:} is the native implementation of binding a quoted block to a singleton
+-- block containing name. It is aliased to :. Bindings consume two quoted
+-- blocks from the stack, and has the side-effect that future NAMEs will
+-- be evaluated to the unquoted BODY*.
 [ {:} ] [ : ] {:}
 
--- minimal set: cons, sip, k
+-- (2) Cons
+-- [REST*] [HEAD_n ... HEAD_1] {CONS} == [[REST*] HEAD_n ... HEAD_1]
+--
+-- {CONS} is the native implementation of consing, which consumes two quoted
+-- blocks from the stack. The second quoted block is appended to the tail
+-- of the first quoted block. Both quoted blocks remain unevaluated.
 [ {CONS} ] [ cons ] :
+
+-- (3) Sip
+-- [B*] [A*] sip == [B*] A [B*]
+--
+-- {SIP} is a native implementation of the sip combinator, which consumes
+-- two quoted blocks from the stack. The second from the top is saved, the
+-- top of the stack is evaluated, its, result pushed onto the stack, and then
+-- the second from the top is duplicated to the top of the stack.
 [ {SIP} ] [ sip ] :
+
+-- (4) K / Konstant / Kestrel / Kill
+-- [B*] [A*] k == A
+--
+-- {K} is a native implementation of the K combinator, which consumes two
+-- quoted blocks from the stack, evaluates the top, and pushes the evaluation
+-- result back onto the stack. The second from the top is discarded without
+-- evaluation.
 [ {K} ] [ k ] :
 
+-- (5) Dup
+-- [A*] dup == [A*] [A*]
+--
+-- `dup` duplicates the top of the stack without evaluating it. Any literals
+-- remain literals, and any quoted blocks remain quoted.
 [ [ ] sip ] [ dup ] :
+
+-- (6) I / Identity / Idiot
+-- [A*] i == A
+--
+-- `i` evaluates the quoted block at the top of the stack. Non-quoted blocks
+-- cause a runtime error.
 [ [ ] sip k ] [ i ] :
+
+-- (7) Unit
+-- [A*] unit == [[A*]]
+--
+-- `unit` quotes the top of the stack. Previously-quoted blocks are doubly-
+-- quoted, while previously-literal values are now singly-quoted.
 [ [ ] cons ] [ unit ] :
+
+-- (8) Zap
+-- [A*] zap == ø
+--
+-- `zap` discards the top of the stack without evaluating it.
 [ [ ] k ] [ zap ] :
 
+-- (9) Dip
+-- [B*] [A*] dip == A [B*]
+--
+-- `dip` evaluates the quoted block at the top of the stack,
+-- pops the second from the top, pushes the result of the first
+-- evaluation, and then pushes the previously second from top.
 [ [ [ cons zap ] sip i ] cons sip ] [ dip ] :
 
+
+-- (10) Catenate
+-- [B*] [A*] cat == [B* A*]
+--
+-- `cat` concatenates the two quoted blocks at the top of the stack
+-- into one quoted block.
+--
+-- TODO(ripta): add test case, bc this feels wrong?
 [ [ [ i ] dip i ] cons cons ] [ cat ] :
+
+-- (11) Swap
+-- [B*] [A*] swap == [A*] [B*]
+--
+-- `swap` swaps the top two of the stack without evaluating them.
 [ unit dip ] [ swap ] :
 
+-- (12) Native arithmetic operations on integers and floats
 [ {+} ] [ + ] :
 [ {-} ] [ - ] :
 [ {*} ] [ * ] :
@@ -26,5 +98,9 @@
 [ {⌈} ] [ ⌈ ] :
 [ {⌈} ] [ ⌉ ] :
 
--- ensure stack is empty after evaluation this file
+--
+-- (END) Ensure stack is empty after evaluation this file to verify that none
+-- of the definitions above leave stray words on the stack.
 {ø}
+
+-- DO NOT ADD TO END
