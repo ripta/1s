@@ -1,8 +1,16 @@
+-- Various forms of double-then-square
+
 [ 2 * ] [ double ] :
 [ dup * ] [ square ] :
 [ 2 * dup * ] [ double-square ] :
+[ dup + dup * ] [ dplus-dmul ] :
 
 7 double
 7 square
 7 double square
 7 double-square
+7 dplus-dmul
+
+[ * dup * ] [ gen-mul-square ] :
+[ 2 gen-mul-square ] [ 2-mul-square ] :
+7 2-mul-square

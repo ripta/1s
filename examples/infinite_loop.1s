@@ -1,0 +1,4 @@
+-- Define `infinite_loop` as a word that resolves to itself.
+-- Is this even correct? Should this have worked?
+[ infinite_loop ] [ infinite_loop ] :
+infinite_loop
