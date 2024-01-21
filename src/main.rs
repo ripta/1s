@@ -372,8 +372,10 @@ fn builtin_define(mut state: State) -> Result<State> {
     let mut syms = get_block(checked_pop!(state))?;
     let body = get_block(checked_pop!(state))?;
 
-    let sym = get_word(syms.pop().ok_or(EvaluationError::StackUnderflow)?)?;
-    state.definitions.insert(sym, Code::Program(body));
+    for sym in syms {
+        let word = get_word(sym)?;
+        state.definitions.insert(word, Code::Program(body.clone()));
+    }
     return Ok(state);
 }
 
