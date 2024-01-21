@@ -1,4 +1,5 @@
--- Prelude from a minimal base {CONS, SIP, K}, plus various arithmetic operations.
+-- Prelude from a minimal base {CONS, SIP, K}, plus various arithmetic
+-- operations as described on http://tunes.org/~iepos/joy.html
 
 -- (1) Binding
 -- [BODY*] [NAME] {:} == ø
@@ -97,6 +98,12 @@
 [ {⌊} ] [ ⌋ ] :
 [ {⌈} ] [ ⌈ ] :
 [ {⌈} ] [ ⌉ ] :
+
+-- (13) syntactic sugar for an empty quotation
+[ [ ] ] [ [] ] :
+
+-- (14) rot
+[ [] cons cons dip ] [ rot ] :
 
 --
 -- (END) Ensure stack is empty after evaluation this file to verify that none
