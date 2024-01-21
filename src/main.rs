@@ -142,7 +142,10 @@ fn run_state(mut s: State, trace_exec: bool) -> Result<State> {
 
         if trace_exec {
             println!("Step {:?}", s.counter);
-            println!("  Stack: {:?}", s.stack);
+            println!("  Stack: ");
+            for st in &s.stack {
+                println!("    {}", st);
+            }
             println!("  Program: {:?}", s.program);
 
             println!("  Definitions: {:?}", dump_definitions(s.clone().definitions));
@@ -414,6 +417,17 @@ fn builtin_div(mut state: State) -> Result<State> {
     return Ok(state);
 }
 
+fn builtin_exactly_equal(mut state: crate::State) -> Result<crate::State> {
+    let a = checked_pop!(state);
+    let b = checked_pop!(state);
+    if a == b {
+        return Ok(state);
+    }
+    return Err(EvaluationError::GuardViolation {
+        reason: "top two items on stack do not match exactly".to_string(),
+    });
+}
+
 fn builtin_floor(mut state: State) -> Result<State> {
     let node = checked_pop!(state);
     state = match node.kind {
@@ -586,6 +600,10 @@ fn builtin_sip(mut state: State) -> Result<State> {
     return Ok(state);
 }
 
+fn builtin_uncons(mut state: State) -> Result<State> {
+    todo!()
+}
+
 fn is_float(word: String) -> bool {
     if word.len() < 2 {
         return false;
@@ -742,12 +760,18 @@ impl Display for ParseNode {
                 write!(f, "]")?;
                 Ok(())
             }
-            ParseKind::FloatValue(v) => write!(f, "{:?}::f64", v),
-            ParseKind::IntegerValue(v) => write!(f, "{:?}::i64", v),
+            ParseKind::FloatValue(v) => write!(f, "{:?}", v),
+            ParseKind::IntegerValue(v) => write!(f, "{:?}", v),
             ParseKind::StringValue(v) => write!(f, "{:?}", v),
             ParseKind::WordRef(v) => write!(f, "{}", v),
             // _ => write!(f, "{:?}", self),
         }
+    }
+}
+
+impl PartialEq for ParseNode {
+    fn eq(&self, other: &Self) -> bool {
+        return self.kind == other.kind;
     }
 }
 
@@ -770,6 +794,19 @@ enum ParseKind {
 impl Display for ParseKind {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(f, "{:?}", self)
+    }
+}
+
+impl PartialEq for ParseKind {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (ParseKind::Block(b1), ParseKind::Block(b2)) => b1 == b2,
+            (ParseKind::FloatValue(f1), ParseKind::FloatValue(f2)) => *f1 == *f2,
+            (ParseKind::IntegerValue(i1), ParseKind::IntegerValue(i2)) => *i1 == *i2,
+            (ParseKind::StringValue(s1), ParseKind::StringValue(s2)) => s1.eq(s2),
+            (ParseKind::WordRef(w1), ParseKind::WordRef(w2)) => w1.eq(w2),
+            (_, _) => false,
+        }
     }
 }
 
@@ -850,7 +887,16 @@ impl State {
 
         defs.insert("{:}".to_string(), Code::Native("{:}".to_string(), builtin_define));
         defs.insert("{ø}".to_string(), Code::Native("{ø}".to_string(), builtin_stack_empty));
+        defs.insert(
+            "{=:=}".to_string(),
+            Code::Native("{=:=}".to_string(), builtin_exactly_equal),
+        );
+
         defs.insert("{CONS}".to_string(), Code::Native("{CONS}".to_string(), builtin_cons));
+        defs.insert(
+            "{UNCONS}".to_string(),
+            Code::Native("{UNCONS}".to_string(), builtin_uncons),
+        );
         defs.insert("{K}".to_string(), Code::Native("{K}".to_string(), builtin_k));
         defs.insert("{SIP}".to_string(), Code::Native("{SIP}".to_string(), builtin_sip));
 
