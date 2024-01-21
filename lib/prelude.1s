@@ -55,7 +55,7 @@
 --
 -- `unit` quotes the top of the stack. Previously-quoted blocks are doubly-
 -- quoted, while previously-literal values are now singly-quoted.
-[ [ ] cons ] [ unit ] :
+[ [ ] cons ] [ unit quote ] :
 
 -- (8) Zap
 -- [A*] zap == ø
@@ -71,21 +71,20 @@
 -- evaluation, and then pushes the previously second from top.
 [ [ [ cons zap ] sip i ] cons sip ] [ dip ] :
 
-
 -- (10) Catenate
 -- [B*] [A*] cat == [B* A*]
 --
 -- `cat` concatenates the two quoted blocks at the top of the stack
 -- into one quoted block.
---
--- TODO(ripta): add test case, bc this feels wrong?
 [ [ [ i ] dip i ] cons cons ] [ cat ] :
 
 -- (11) Swap
 -- [B*] [A*] swap == [A*] [B*]
 --
--- `swap` swaps the top two of the stack without evaluating them.
-[ unit dip ] [ swap ] :
+-- `swap` swaps the top two of the stack without evaluating them. It
+-- is also the base case for `1dig`, `1bury`, and `1flip`, which are
+-- all aliases.
+[ unit dip ] [ swap 1dig 1bury 1flip ] :
 
 -- (12) Native arithmetic operations on integers and floats
 [ {+} ] [ + ] :
@@ -99,11 +98,105 @@
 [ {⌈} ] [ ⌈ ] :
 [ {⌈} ] [ ⌉ ] :
 
--- (13) syntactic sugar for an empty quotation
+-- (13) syntactic sugar for an empty quoted block
 [ [ ] ] [ [] ] :
+[ [ [ ] ] ] [ [[]] ] :
 
--- (14) rot
-[ [] cons cons dip ] [ rot ] :
+-- (14) Digging
+-- [C*] [B*] [A*] 2dig == [B*] [A*] [C*]
+-- [D*] [C*] [B*] [A*] 3dig == [C*] [B*] [A*] [D*]
+-- [E*] [D*] [C*] [B*] [A*] 4dig == [D*] [C*] [B*] [A*] [E*]
+--
+-- `2dig` reaches under the top two of the stack, and bringing the third
+-- to the top. It is the opposite of a 2bury. For convenience, both `3dig`
+-- and `4dig` are also provided.
+[ [] cons cons dip ] [ 2dig ] :
+[ [] cons cons cons dip ] [ 3dig ] :
+[ [] cons cons cons cons dip ] [ 4dig ] :
+
+-- (15) Duping
+-- [B*] [A*] 2dup == [B*] [A*] [B*] [A*]
+--
+-- `2dup` duplicates the top two of the stack, preserving the order.
+[ swap dup 2dig dup 2dig 2dig ] [ 2dup ] :
+
+-- (16) Dig skipping
+-- [D*] [C*] [B*] [A*] 2dig1 == [C*] [B*] [D*] [A*]
+--
+-- `2dig1` performs a 2dig after skipping the top of the stack.
+-- Essentially popping the first off, performing a 2dig, and then
+-- restoring the top of the stack.
+[ [ 2dig ] dip ] [ 2dig1 ] :
+[ [ 3dig ] dip ] [ 3dig1 ] :
+
+-- (17) Burying
+-- [C*] [B*] [A*] 2bury == [A*] [C*] [B*]
+-- [D*] [C*] [B*] [A*] 3bury == [A*] [D*] [C*] [B*]
+-- [E*] [D*] [C*] [B*] [A*] 4bury == [A*] [E*] [D*] [C*] [B*]
+--
+-- `2bury` takes the top of the stack and buries it under the next two
+-- of the stack. It is the opposite of 2dig. For convenience, both
+-- `3bury` and `4bury` are also provided.
+[ [ [] cons cons ] dip swap i ] [ 2bury ] :
+[ [ [] cons cons cons ] dip swap i ] [ 3bury ] :
+[ [ [] cons cons cons cons ] dip swap i ] [ 4bury ] :
+
+-- (18) Taking
+--
+-- `take` conses the element to the opposite end of the quoted block.
+[ [ dip ] cons cons ] [ take ] :
+
+-- (19) Flipping
+-- [C*] [B*] [A*] 3flip == [A*] [B*] [C*]
+-- [D*] [C*] [B*] [A*] 4flip == [A*] [B*] [C*] [D*]
+--
+-- `3flip` flips the top three of the stack, while `4flip` flips the top
+-- four of the stack.
+[ [] take take take i ] [ 3flip ] :
+[ [] take take take take i ] [ 4flip ] :
+
+-- (20) The W, B, and C combinators
+-- [B*] [A*] W == [B*] [B*] A
+-- [C*] [B*] [A*] B == [[C*] B*] A
+-- [C*] [B*] [A*] C == [B*] [C*] A
+[ [ dup ] dip i ] [ W ] :
+[ [ cons ] dip i ] [ B ] :
+[ [ swap ] dip i ] [ C ] :
+
+-- (21) Run combinator
+-- [A*] run == A [A*]
+--
+-- `run` executes the quoted block at the top, and leaves a new copy of
+-- the quoted block at the top of the stack, ready for another `run`.
+[ dup i swap ] [ run ] :
+
+-- (22) Repeated execution
+-- [A*] 0rep == ø
+-- [A*] 1rep == A
+-- [A*] 2rep == A A
+-- [A*] 3rep == A A A
+[ zap ] [ 0rep ] :
+[ i ] [ 1rep ] :
+[ run i ] [ 2rep ] :
+[ run run i ] [ 3rep ] :
+
+-- (23) Variable execution
+
+-- (24) Dup skipping
+-- [C*] [B*] [A*] dup2 == [C*] [B*] [A*] [C*]
+--
+-- `dup2` duplicates the element after skipping the top two.
+[ 2dig dup 2dig1 2dig1 ] [ dup2 ] :
+[ dup2 dup2 ] [ 2dup1 2over ] :
+
+-- (25) 2fork
+-- [C*] [B*] [A*] 2fork == AC AB
+--
+-- `2fork` applies the quotation at the top of the stack to the second and
+-- third values consecutively, leaving the results on the stack.
+--
+-- Example: 5 10 [ 2 + ] 2fork == 7 12
+[ dup 2bury i 2bury i swap ] [ 2fork ] :
 
 --
 -- (END) Ensure stack is empty after evaluation this file to verify that none
