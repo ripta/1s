@@ -369,7 +369,7 @@ fn builtin_cons(mut state: State) -> Result<State> {
 }
 
 fn builtin_define(mut state: State) -> Result<State> {
-    let mut syms = get_block(checked_pop!(state))?;
+    let syms = get_block(checked_pop!(state))?;
     let body = get_block(checked_pop!(state))?;
 
     for sym in syms {
