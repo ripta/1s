@@ -314,6 +314,39 @@ fn builtin_add(mut state: State) -> Result<State> {
     return Ok(state);
 }
 
+fn builtin_car(mut state: State) -> Result<State> {
+    // `car` of a non-quoted block should error out
+    let mut a = get_block(checked_pop!(state))?;
+
+    // `car` of an empty block is itself an empty block, so ignore removal of an already empty block
+    if a.len() > 0 {
+        a.remove(0);
+    }
+    state.stack.push(ParseNode {
+        kind: ParseKind::Block(a),
+        location: state.clone().location,
+    });
+
+    return Ok(state);
+}
+
+fn builtin_cdr(mut state: State) -> Result<State> {
+    // `cdr` of a non-quoted block should error out
+    let mut a = get_block(checked_pop!(state))?;
+
+    // `cdr` of an empty block is itself an empty block, so ignore removal of an already empty block
+    if a.len() > 1 {
+        state.stack.push(a.remove(0));
+    } else {
+        state.stack.push(ParseNode {
+            kind: ParseKind::Block(vec![]),
+            location: state.clone().location,
+        });
+    }
+
+    return Ok(state);
+}
+
 fn builtin_ceil(mut state: State) -> Result<State> {
     let node = checked_pop!(state);
     state = match node.kind {
@@ -600,10 +633,6 @@ fn builtin_sip(mut state: State) -> Result<State> {
     state.program.extend(p);
 
     return Ok(state);
-}
-
-fn builtin_uncons(mut state: State) -> Result<State> {
-    todo!()
 }
 
 fn is_float(word: String) -> bool {
@@ -895,12 +924,11 @@ impl State {
         );
 
         defs.insert("{CONS}".to_string(), Code::Native("{CONS}".to_string(), builtin_cons));
-        defs.insert(
-            "{UNCONS}".to_string(),
-            Code::Native("{UNCONS}".to_string(), builtin_uncons),
-        );
         defs.insert("{K}".to_string(), Code::Native("{K}".to_string(), builtin_k));
         defs.insert("{SIP}".to_string(), Code::Native("{SIP}".to_string(), builtin_sip));
+
+        defs.insert("{CAR}".to_string(), Code::Native("{CAR}".to_string(), builtin_car));
+        defs.insert("{CDR}".to_string(), Code::Native("{CDR}".to_string(), builtin_cdr));
 
         defs.insert("{+}".to_string(), Code::Native("{+}".to_string(), builtin_add));
         defs.insert("{/}".to_string(), Code::Native("{/}".to_string(), builtin_div));
