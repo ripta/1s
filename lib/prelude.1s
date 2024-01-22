@@ -25,7 +25,7 @@
 -- two quoted blocks from the stack. The second from the top is saved, the
 -- top of the stack is evaluated, its, result pushed onto the stack, and then
 -- the second from the top is duplicated to the top of the stack.
-[ {SIP} ] [ sip ] :
+[ {SIP} ] [ sip keep ] :
 
 -- (4) K / Konstant / Kestrel / Kill
 -- [B*] [A*] k == A
@@ -119,6 +119,7 @@
 --
 -- `2dup` duplicates the top two of the stack, preserving the order.
 [ swap dup 2dig dup 2dig 2dig ] [ 2dup ] :
+[ 2dig dup 2bury 3dig dup 3bury 2dig dup 3bury ] [ 3dup ] :
 
 -- (16) Dig skipping
 -- [D*] [C*] [B*] [A*] 2dig1 == [C*] [B*] [D*] [A*]
@@ -180,16 +181,16 @@
 [ run i ] [ 2rep ] :
 [ run run i ] [ 3rep ] :
 
--- (23) Variable execution
-
--- (24) Dup skipping
+-- (23) Dup skipping
 -- [C*] [B*] [A*] dup2 == [C*] [B*] [A*] [C*]
 --
--- `dup2` duplicates the element after skipping the top two.
+-- `dup2` duplicates the element after skipping the top two. `2dup1` duplicates
+-- the two elements after skipping the top one.
+[ swap dup 2bury ] [ dup1 over ] :
 [ 2dig dup 2dig1 2dig1 ] [ dup2 ] :
 [ dup2 dup2 ] [ 2dup1 2over ] :
 
--- (25) 2fork
+-- (24) Forking
 -- [C*] [B*] [A*] 2fork == AC AB
 --
 -- `2fork` applies the quotation at the top of the stack to the second and
@@ -197,6 +198,28 @@
 --
 -- Example: 5 10 [ 2 + ] 2fork == 7 12
 [ dup 2bury i 2bury i swap ] [ 2fork ] :
+
+-- (25) Both
+-- C [B*] [A*] both == AC BC
+--
+-- `both` applies the argument C to both quotations A and B consecutively,
+-- leaving the results on the stack. In general, equivalent to:
+--
+-- C [B*] sip A*
+--
+-- Example: 5 [ 3 + ] [ 3 * ] both == 8 15
+--          5 [ 3 + ] keep 3 *     == 8 15
+[ [ keep ] dip i ] [ both ] :
+
+-- (26) Advanced dipping
+[ swap [ dip ] dip ] [ 2dip ] :
+[ swap [ 2dip ] dip ] [ 3dip ] :
+
+-- (27) Advanced keeping
+-- [C*] [B*] [A*] 2keep == [C*] [B*] A [C*] [B*]
+-- [D*] [C*] [B*] [A*] 3keep == [D*] [C*] [B*] A [D*] [C*] [B*]
+[ [ 2dup ] dip 2dip ] [ 2keep ] :
+[ [ 3dup ] dip 3dip ] [ 3keep ] :
 
 --
 -- (END) Ensure stack is empty after evaluation this file to verify that none
