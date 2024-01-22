@@ -221,6 +221,28 @@
 [ [ 2dup ] dip 2dip ] [ 2keep ] :
 [ [ 3dup ] dip 3dip ] [ 3keep ] :
 
+-- (28) Car, Cader, and Unconsing
+-- [[B*] A*] car == [A*]
+-- [[B*] A*] cdr == [B*]
+--
+-- `car` returns the head of the quoted block at the top of the stack.
+-- `cdr` returns the tail of the quoted block at the top of the stack.
+-- `uncons` reverses a cons, returning `cdr` and `car` to the top of the stack.
+--
+-- Example: [ [ 3 ] 2 ] [ 1 ] cons   == [ [ [ 3 ] 2 ] 1 ]
+--          [ [ [ 3 ] 2 ] 1 ] car    == [ 1 ]
+--          [ [ [ 3 ] 2 ] 1 ] cdr    == [ [ 3 ] 2 ]
+--          [ [ [ 3 ] 2 ] 1 ] uncons == [ [ 3 ] 2 ] [ 1 ]
+[ {CAR} ] [ car ] :
+[ {CDR} ] [ cdr ] :
+[ [ cdr ] [ car ] both ] [ uncons ] :
+
+-- (29) Swonsing and Unswonsing
+--
+-- `swons` is like `cons` with the elements out of order.
+[ swap cons ] [ swons ] :
+[ uncons swap ] [ unswons ] :
+
 --
 -- (END) Ensure stack is empty after evaluation this file to verify that none
 -- of the definitions above leave stray words on the stack.
