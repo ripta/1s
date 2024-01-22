@@ -581,7 +581,7 @@ fn builtin_sub(mut state: State) -> Result<State> {
 
 fn builtin_k(mut state: State) -> Result<State> {
     let mut a = get_block(checked_pop!(state))?;
-    let _b = get_block(checked_pop!(state))?;
+    checked_pop!(state);
 
     a.reverse();
     state.program.append(&mut a);
