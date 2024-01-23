@@ -259,6 +259,17 @@ fn get_integer(s: &ParseNode) -> Result<i64> {
     }
 }
 
+fn get_string(s: &ParseNode) -> Result<String> {
+    match s.clone().kind {
+        ParseKind::StringValue(s) => Ok(s),
+        otherwise => IncompatibleValueSnafu {
+            expected: "string",
+            found: otherwise.to_string(),
+        }
+        .fail(),
+    }
+}
+
 fn get_word(s: ParseNode) -> Result<String> {
     match s.kind {
         ParseKind::WordRef(w) => Ok(w.to_string()),
@@ -302,6 +313,18 @@ fn builtin_add(mut state: State) -> Result<State> {
             let b = get_integer(&checked_pop!(state))?;
             state.stack.push(ParseNode {
                 kind: ParseKind::IntegerValue(a + b),
+                location: state.clone().location,
+            });
+            Ok(state)
+        }
+
+        ParseKind::StringValue(a) => {
+            let b = get_string(&checked_pop!(state))?;
+
+            let mut res = a.to_owned();
+            res.push_str(&b);
+            state.stack.push(ParseNode {
+                kind: ParseKind::StringValue(res),
                 location: state.clone().location,
             });
             Ok(state)
