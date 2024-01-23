@@ -214,6 +214,8 @@ enum EvaluationError {
         source: std::num::ParseIntError,
         token: String,
     },
+    #[snafu(display("unclosed string"))]
+    UnclosedString,
     #[snafu(display("incompatible value on stack: expected '{expected}', but found '{found}'"))]
     IncompatibleValue { expected: String, found: String },
     #[snafu(display("stack underflow"))]
@@ -675,6 +677,7 @@ fn lex(content: String) -> Result<Vec<Token>> {
 
     let mut buf = String::new();
     let mut in_comment = false;
+    let mut in_string = false;
     let mut comment_word_num = 0usize;
 
     let mut tokens: Vec<Token> = Vec::new();
@@ -688,11 +691,40 @@ fn lex(content: String) -> Result<Vec<Token>> {
                 continue;
             }
 
+            if in_string {
+                buf.push_str(" ");
+
+                if word.ends_with('"') {
+                    in_string = false;
+                    buf.push_str(&word[0..word.len() - 1]);
+                    tokens.push(Token {
+                        kind: TokenKind::LiteralString(buf.to_string()),
+                        location: Location::Source(line_num, word_num),
+                    });
+                    continue;
+                }
+
+                buf.push_str(&word);
+                continue;
+            }
+
             // TODO(ripta): stop compressing away multiple whitespace characters in comments
             if word.len() >= 2 && word.chars().all(|c| c == '-') {
                 in_comment = true;
                 comment_word_num = word_num;
                 buf.push_str(&word);
+                continue;
+            }
+
+            if word.len() >= 2 && word.starts_with("\"") && word.ends_with("\"") {
+                tokens.push(Token {
+                    kind: TokenKind::LiteralString(word[1..word.len() - 1].to_string()),
+                    location: loc,
+                });
+                continue;
+            } else if word.len() >= 2 && word.starts_with('"') {
+                in_string = true;
+                buf.push_str(&word[1..]);
                 continue;
             }
 
@@ -731,6 +763,10 @@ fn lex(content: String) -> Result<Vec<Token>> {
             in_comment = false;
             comment_word_num = 0;
         }
+    }
+
+    if in_string {
+        return Err(EvaluationError::UnclosedString);
     }
 
     return Ok(tokens);
@@ -838,7 +874,7 @@ fn parse_(tokens: &mut Iter<Token>) -> Vec<ParseNode> {
                         location: token.location,
                     }),
                     TokenKind::LiteralString(s) => span.push(ParseNode {
-                        kind: ParseKind::StringValue(s.to_string()),
+                        kind: ParseKind::StringValue(s),
                         location: token.location,
                     }),
                     TokenKind::Word(w) => match w.as_str() {
