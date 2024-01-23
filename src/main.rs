@@ -669,26 +669,6 @@ fn is_integer(word: String) -> bool {
 }
 
 fn lex(content: String) -> Result<Vec<Token>> {
-    // let mut builtins: Vec<(String, fn(Vec<Token>) -> Result<()>)> = Vec::new();
-    // builtins.push(("1s".to_string(), builtin_1s));
-    // builtins.push(("+".to_string(), builtin_add));
-    // builtins.push(("[".to_string(), builtin_noop));
-    // builtins.push(("]".to_string(), builtin_noop));
-
-    // let mut atoms: Vec<String> = Vec::new();
-    // let mut atoms: Vec<String> = ["1s", "[", "]"].iter().map(|a| a.to_string()).collect();
-
-    // let mut atoms: Vec<String> = builtins.iter().map(|(n, _f)| n.to_string()).collect();
-    // let mut atoms_map: HashMap<String, usize> = HashMap::new();
-    // for (i, atom) in atoms.iter().enumerate() {
-    //     atoms_map.insert(atom.to_string(), i);
-    // }
-
-    // arena.define("1s", builtin_1s);
-    // arena.define("+", builtin_add);
-    // arena.define("[", builtin_noop);
-    // arena.define("]", builtin_noop);
-
     let lines = content
         .split("\n")
         .map(|line| line.split_whitespace().map(str::to_string));
@@ -740,19 +720,6 @@ fn lex(content: String) -> Result<Vec<Token>> {
                 kind: TokenKind::Word(word),
                 location: loc,
             });
-
-            // match arena.atoms_map.get(word) {
-            //     Some(t) => {
-            //         // println!("L{line_num} W{word_num}: {word}");
-            //         arena.tokens.push(Token::TWord(*t));
-            //     }
-            //     None => {
-            //         // println!("Hi!");
-            //         // arena.atoms.push(word.to_string());
-            //         // arena.atoms_map.insert(word.to_string(), arena.atoms.len());
-            //         arena.tokens.push(Token::TWord(arena.atoms.len() - 1));
-            //     }
-            // }
         }
 
         if in_comment {
@@ -961,35 +928,6 @@ impl State {
         };
     }
 }
-
-// struct Arena {
-//     atoms: Vec<String>,
-//     atoms_map: HashMap<String, usize>,
-// }
-
-// impl Arena {
-//     fn new() -> Arena {
-//         return Arena {
-//             atoms: Vec::with_capacity(64),
-//             atoms_map: HashMap::with_capacity(64),
-//         };
-//     }
-//
-//     // fn define(&mut self, word: &str, f: fn(Vec<Token>) -> Result<()>) {
-//     //     match self.atoms_map.get(word) {
-//     //         Some(t) => {
-//     //             // println!("L{line_num} W{word_num}: {word}");
-//     //             self.tokens.push(Token::Word(*t));
-//     //         }
-//     //         None => {
-//     //             // println!("Hi!");
-//     //             self.atoms.push(word.to_string());
-//     //             self.atoms_map.insert(word.to_string(), self.atoms.len());
-//     //             self.tokens.push(Token::Word(self.atoms.len() - 1));
-//     //         }
-//     //     }
-//     // }
-// }
 
 fn eval(mut state: State) -> Result<State> {
     let item = state.program.pop().ok_or(EvaluationError::StackUnderflow)?;
