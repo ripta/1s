@@ -1,3 +1,5 @@
+mod sym;
+
 use rustyline::DefaultEditor;
 use snafu::prelude::*;
 use std::collections::HashMap;
@@ -5,6 +7,7 @@ use std::fmt::{Display, Formatter};
 use std::iter::Iterator;
 use std::slice::Iter;
 use std::{fmt, result};
+use string_interner::DefaultSymbol;
 
 fn main() {
     let flags = parse_args();
@@ -112,13 +115,13 @@ fn run(flags: Flags) -> Result<u8> {
     return Ok(0);
 }
 
-fn run_string(state: State, content: String, trace_exec: bool) -> Result<State> {
+fn run_string(mut state: State, content: String, trace_exec: bool) -> Result<State> {
     let tokens = lex(content)?;
     if trace_exec {
         println!("LEXED-TOKENS {}", tokens.len());
     }
 
-    let pt = parse(tokens)?;
+    let pt = parse(&mut state.symbols, tokens)?;
 
     let mut prog = pt.top_level.clone();
     prog.reverse();
@@ -820,7 +823,8 @@ impl Display for ParseNode {
             ParseKind::FloatValue(v) => write!(f, "{:?}", v),
             ParseKind::IntegerValue(v) => write!(f, "{:?}", v),
             ParseKind::StringValue(v) => write!(f, "{:?}", v),
-            ParseKind::WordRef(v) => write!(f, "{}", v),
+            ParseKind::Symbol(s) => write!(f, "{:?}", s),
+            ParseKind::WordRef(w) => write!(f, "{}", w),
             // _ => write!(f, "{:?}", self),
         }
     }
@@ -844,7 +848,7 @@ enum ParseKind {
     FloatValue(f64),
     IntegerValue(i64),
     StringValue(String),
-    // WordInternal(String),
+    Symbol(DefaultSymbol),
     WordRef(String),
 }
 
@@ -867,17 +871,16 @@ impl PartialEq for ParseKind {
     }
 }
 
-fn parse(tokens: Vec<Token>) -> Result<ParseTree> {
-    let top = parse_(&mut tokens.iter());
+fn parse(symbols: &mut sym::SymbolManager, tokens: Vec<Token>) -> Result<ParseTree> {
+    let top = parse_(symbols, &mut tokens.iter());
     return Ok(ParseTree { top_level: top });
 }
 
 /// parse_ is the recursive version of parse, during which the (linear) stream of tokens is converted into one or more
 /// levels of nested blocks.
 ///
-/// TODO(ripta): interned strings
 /// TODO(ripta): recursive descent
-fn parse_(tokens: &mut Iter<Token>) -> Vec<ParseNode> {
+fn parse_(symbols: &mut sym::SymbolManager, tokens: &mut Iter<Token>) -> Vec<ParseNode> {
     let mut span: Vec<ParseNode> = Vec::with_capacity(8);
 
     loop {
@@ -902,13 +905,20 @@ fn parse_(tokens: &mut Iter<Token>) -> Vec<ParseNode> {
                     }),
                     TokenKind::Word(w) => match w.as_str() {
                         "[" => {
-                            let block = parse_(tokens);
+                            let block = parse_(symbols, tokens);
                             span.push(ParseNode {
                                 kind: ParseKind::Block(block),
                                 location: token.location,
                             });
                         }
                         "]" => break,
+                        s if s.starts_with('#') => {
+                            let sym = symbols.get(&s[1..]);
+                            span.push(ParseNode {
+                                kind: ParseKind::Symbol(sym),
+                                location: token.location,
+                            });
+                        }
                         _ => span.push(ParseNode {
                             kind: ParseKind::WordRef(w.to_string()),
                             location: token.location,
@@ -935,11 +945,16 @@ struct State {
 
     stack: Vec<ParseNode>,
     program: Vec<ParseNode>,
+    symbols: sym::SymbolManager,
     definitions: HashMap<String, Code>,
 }
 
 impl State {
     fn new() -> State {
+        let mut symbols = sym::SymbolManager::new();
+        symbols.reserve("false");
+        symbols.reserve("true");
+
         let mut defs = HashMap::with_capacity(64);
 
         defs.insert("{:}".to_string(), Code::Native("{:}".to_string(), builtin_define));
@@ -972,6 +987,7 @@ impl State {
             counter: (0usize, 0usize),
             location: Location::Source(0usize, 0usize),
             stack: Vec::with_capacity(64),
+            symbols: symbols,
             definitions: defs,
             program: Vec::with_capacity(64),
         };
@@ -982,6 +998,7 @@ impl State {
             counter: s.counter,
             location: s.location,
             stack: s.stack,
+            symbols: s.symbols,
             definitions: s.definitions,
             program: tl,
         };
@@ -1005,6 +1022,10 @@ fn eval(mut state: State) -> Result<State> {
             state.stack.push(item);
         }
         ParseKind::StringValue(_) => {
+            state.location = item.clone().location;
+            state.stack.push(item);
+        }
+        ParseKind::Symbol(_) => {
             state.location = item.clone().location;
             state.stack.push(item);
         }
