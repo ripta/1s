@@ -273,6 +273,17 @@ fn get_string(s: &ParseNode) -> Result<String> {
     }
 }
 
+fn get_sym(s: &ParseNode) -> Result<DefaultSymbol> {
+    match s.clone().kind {
+        ParseKind::Symbol(s) => Ok(s),
+        otherwise => IncompatibleValueSnafu {
+            expected: "symbol",
+            found: otherwise.to_string(),
+        }
+        .fail(),
+    }
+}
+
 fn get_word(s: ParseNode) -> Result<String> {
     match s.kind {
         ParseKind::WordRef(w) => Ok(w.to_string()),
@@ -391,6 +402,34 @@ fn builtin_ceil(mut state: State) -> Result<State> {
             value: node.clone(),
         }),
     }?;
+
+    return Ok(state);
+}
+
+fn builtin_cond(mut state: State) -> Result<State> {
+    let mut cond = get_block(checked_pop!(state))?;
+    let sym_true = state.symbols.get_true();
+
+    let mut s2 = state.clone();
+    loop {
+        let check = get_block(cond.pop().ok_or(EvaluationError::StackUnderflow)?)?;
+        let mut branch = get_block(cond.pop().ok_or(EvaluationError::StackUnderflow)?)?;
+
+        s2 = State::with(s2, check);
+        s2 = run_state(s2, false)?;
+
+        if get_sym(&checked_pop!(s2))? == sym_true {
+            branch.reverse();
+            state.program.append(&mut branch);
+            break;
+        }
+
+        if cond.is_empty() {
+            return Err(EvaluationError::GuardViolation {
+                reason: "condition never matches".to_string(),
+            });
+        }
+    }
 
     return Ok(state);
 }
@@ -600,9 +639,30 @@ fn builtin_stack_empty(state: crate::State) -> Result<crate::State> {
     });
 }
 
+fn builtin_show(mut state: State) -> Result<State> {
+    let node = checked_pop!(state);
+    return match node.kind {
+        ParseKind::Symbol(sym) => match state.symbols.find(sym) {
+            None => {
+                eprintln!("Symbol not found");
+                Ok(state)
+            }
+            Some(s) => {
+                eprintln!("Symbol: {}", s);
+                Ok(state)
+            }
+        },
+
+        _ => Err(EvaluationError::CannotOperate {
+            op: "{SHOW}".to_string(),
+            value: node.clone(),
+        }),
+    };
+}
+
 fn builtin_sub(mut state: State) -> Result<State> {
     let node = checked_pop!(state);
-    state = match node.kind {
+    return match node.kind {
         ParseKind::Block(b) => {
             let vals = b.iter().map(get_integer).collect::<Result<Vec<i64>>>()?;
             let sum = vals.iter().fold(0, |acc, v| acc - v);
@@ -635,9 +695,7 @@ fn builtin_sub(mut state: State) -> Result<State> {
             op: "{-}".to_string(),
             value: node.clone(),
         }),
-    }?;
-
-    return Ok(state);
+    };
 }
 
 fn builtin_k(mut state: State) -> Result<State> {
@@ -979,6 +1037,10 @@ impl State {
 
         defs.insert("√2".to_string(), Code::Native("√2".to_string(), builtin_const_sqrt2));
         defs.insert("π".to_string(), Code::Native("π".to_string(), builtin_const_pi));
+
+        defs.insert("{SHOW}".to_string(), Code::Native("{SHOW}".to_string(), builtin_show));
+
+        defs.insert("{COND}".to_string(), Code::Native("{COND}".to_string(), builtin_cond));
 
         return State {
             counter: (0usize, 0usize),
