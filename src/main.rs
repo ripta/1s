@@ -310,7 +310,7 @@ macro_rules! checked_pop {
 
 fn builtin_add(mut state: State) -> Result<State> {
     let node = checked_pop!(state);
-    state = match node.kind {
+    return match node.kind {
         ParseKind::Block(b) => {
             let vals = b.iter().map(get_integer).collect::<Result<Vec<i64>>>()?;
             let sum = vals.iter().fold(0, |acc, v| acc + v);
@@ -355,9 +355,7 @@ fn builtin_add(mut state: State) -> Result<State> {
             op: "{+}".to_string(),
             value: node.clone(),
         }),
-    }?;
-
-    return Ok(state);
+    };
 }
 
 fn builtin_car(mut state: State) -> Result<State> {
@@ -395,7 +393,7 @@ fn builtin_cdr(mut state: State) -> Result<State> {
 
 fn builtin_ceil(mut state: State) -> Result<State> {
     let node = checked_pop!(state);
-    state = match node.kind {
+    return match node.kind {
         ParseKind::FloatValue(a) => {
             state.stack.push(ParseNode {
                 kind: ParseKind::FloatValue(a.ceil()),
@@ -408,9 +406,7 @@ fn builtin_ceil(mut state: State) -> Result<State> {
             op: "{⌈}".to_string(),
             value: node.clone(),
         }),
-    }?;
-
-    return Ok(state);
+    };
 }
 
 fn builtin_cond(mut state: State) -> Result<State> {
@@ -492,7 +488,7 @@ fn builtin_define(mut state: State) -> Result<State> {
 
 fn builtin_div(mut state: State) -> Result<State> {
     let node = checked_pop!(state);
-    state = match node.kind {
+    return match node.kind {
         ParseKind::Block(b) => {
             let vals = b.iter().map(get_integer).collect::<Result<Vec<i64>>>()?;
             let sum = vals.iter().fold(0, |acc, v| acc / v);
@@ -525,9 +521,7 @@ fn builtin_div(mut state: State) -> Result<State> {
             op: "{/}".to_string(),
             value: node.clone(),
         }),
-    }?;
-
-    return Ok(state);
+    };
 }
 
 fn builtin_exactly_equal(mut state: State) -> Result<State> {
@@ -554,7 +548,7 @@ fn builtin_assert(mut state: State) -> Result<State> {
 
 fn builtin_floor(mut state: State) -> Result<State> {
     let node = checked_pop!(state);
-    state = match node.kind {
+    return match node.kind {
         ParseKind::FloatValue(a) => {
             state.stack.push(ParseNode {
                 kind: ParseKind::FloatValue(a.floor()),
@@ -567,9 +561,7 @@ fn builtin_floor(mut state: State) -> Result<State> {
             op: "{⌊}".to_string(),
             value: node.clone(),
         }),
-    }?;
-
-    return Ok(state);
+    };
 }
 
 fn builtin_if(mut state: State) -> Result<State> {
@@ -601,7 +593,7 @@ fn builtin_if(mut state: State) -> Result<State> {
 
 fn builtin_mod(mut state: State) -> Result<State> {
     let node = checked_pop!(state);
-    state = match node.kind {
+    return match node.kind {
         ParseKind::Block(b) => {
             let vals = b.iter().map(get_integer).collect::<Result<Vec<i64>>>()?;
             let sum = vals.iter().fold(0, |acc, v| acc % v);
@@ -634,14 +626,12 @@ fn builtin_mod(mut state: State) -> Result<State> {
             op: "{%}".to_string(),
             value: node.clone(),
         }),
-    }?;
-
-    return Ok(state);
+    };
 }
 
 fn builtin_mul(mut state: State) -> Result<State> {
     let node = checked_pop!(state);
-    state = match node.kind {
+    return match node.kind {
         ParseKind::Block(b) => {
             let vals = b.iter().map(get_integer).collect::<Result<Vec<i64>>>()?;
             let sum = vals.iter().fold(0, |acc, v| acc * v);
@@ -674,9 +664,7 @@ fn builtin_mul(mut state: State) -> Result<State> {
             op: "{*}".to_string(),
             value: node.clone(),
         }),
-    }?;
-
-    return Ok(state);
+    };
 }
 
 fn builtin_stack_empty(state: crate::State) -> Result<crate::State> {
