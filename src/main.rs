@@ -88,6 +88,14 @@ fn run(flags: Flags) -> Result<u8> {
                         }
                         Err(e) => {
                             println!("Error: {}", e);
+                            if state.stack.is_empty() {
+                                println!("Empty Stack");
+                            } else {
+                                println!("Stack:");
+                                for st in &state.stack {
+                                    println!("  {}", st);
+                                }
+                            }
                         }
                     }
                 }
