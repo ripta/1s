@@ -9,9 +9,6 @@ use std::slice::Iter;
 use std::{fmt, result};
 use string_interner::DefaultSymbol;
 
-const SYM_FALSE: &str = "false";
-const SYM_TRUE: &str = "true";
-
 fn main() {
     let flags = parse_args();
     if let Err(e) = flags {
@@ -954,8 +951,6 @@ struct State {
 impl State {
     fn new() -> State {
         let mut symbols = sym::SymbolManager::new();
-        symbols.reserve(SYM_FALSE);
-        symbols.reserve(SYM_TRUE);
 
         let mut defs = HashMap::with_capacity(64);
 
