@@ -72,11 +72,14 @@ fn run(flags: Flags) -> Result<u8> {
                     // println!("{}", line);
                     match run_string(state.clone(), line, flags.trace_exec) {
                         Ok(ns) => {
-                            println!("Stack: ");
-                            for st in &ns.stack {
-                                println!("  {}", st);
+                            if ns.stack.is_empty() {
+                                println!("Empty Stack");
+                            } else {
+                                println!("Stack:");
+                                for st in &ns.stack {
+                                    println!("  {}", st);
+                                }
                             }
-
                             state = ns;
                         }
                         Err(EvaluationError::UndefinedWord { word, location: _ }) => {
