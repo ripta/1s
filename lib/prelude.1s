@@ -69,6 +69,7 @@
 --
 -- `zap` discards the top of the stack without evaluating it.
 [ [ ] k ] [ zap ] :
+[ swap zap swap zap ] [ 2zap1 ] :
 
 -- (9) Dip
 -- [B*] [A*] dip == A [B*]
@@ -254,8 +255,8 @@
 [ dup {SHOW} ] [ show ] :
 
 -- (31) Conditionals
--- [[BRANCH-n*] [CHECK-n*] ... [BRANCH-2*] [CHECK-2*] [BRANCH-1*] [CHECK-1*]] cond
 -- VALUE [CHECK*] [BRANCH-TRUE*] [BRANCH-FALSE*] if
+-- [[BRANCH-n*] [CHECK-n*] ... [BRANCH-2*] [CHECK-2*] [BRANCH-1*] [CHECK-1*]] cond
 --
 -- `cond` is a native implementation of a series of condition checks. It evaluates
 -- the quoted block at the top of the stack. It evaluates the first block (CHECK-#).
@@ -273,9 +274,14 @@
 -- with a flipped block structure to allow the next element on the stack to be easily
 -- used as the CHECK block.
 --
+-- `if*` is a convenience word built on `if`, where the conditional is preserved when true.
+-- C [B*] [A*] if* == C dup [B*] [zap A*] if
 --
-[ {COND} ] [ cond ] :
-[ 4flip swap cons [ #true ] 2bury unit cons cons cons cond ] [ if ] :
+[ {IF} ] [ if ] :
+[ dup2 [ zap i ] [ 2zap1 i ] if ] [ if* ] :
+[ [ dup callable? [ zap #true ] [ first i ] if ] find nip
+  [ dup callable? [ i ] [ second call ] if ] [ #false "fail" {!!} ] if*
+] [ cond ] :
 
 --
 -- (END) Ensure stack is empty after evaluation this file to verify that none
