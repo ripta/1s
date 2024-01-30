@@ -9,5 +9,4 @@ unit cons
 [ ignored ] [ 3 4 + ] swap unit cat i
 unit cons
 
--- Ensure they match their structure exactly
-{=:=}
+eq?
