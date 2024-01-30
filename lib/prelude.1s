@@ -274,6 +274,19 @@
 [ dup2 [ zap i ] [ 2zap1 i ] if ] [ if* ] :
 [ swap [ i ] [ zap ] if ] [ when ] :
 
+-- Iteration
+-- FROM TO [EACH*] upto
+-- TO [EACH*] 0,upto
+--
+-- `upto` applies the EACH* quoted block to each integer from FROM (inclusive) to TO (exclusive).
+--
+-- `0,upto` is a convenience word that hardcodes FROM to the value 0.
+--
+-- Example: 0 5 [ 2 * ] upto == 0 2 4 6 8
+--          5 [ 2 * ] 0,upto == 0 2 4 6 8
+[ 2dup1 lt? [ [ swap zap i ] 3keep [ 1 + ] 2dip upto ] [ zap zap zap ] if ] [ upto ] :
+[ [ 0 ] 2dip upto ] [ 0,upto ] :
+
 --
 -- (END) Ensure stack is empty after evaluation this file to verify that none
 -- of the definitions above leave stray words on the stack.
