@@ -1,4 +1,4 @@
-use string_interner::{DefaultSymbol, StringInterner};
+use string_interner::{DefaultSymbol, StringInterner, Symbol};
 
 #[derive(Clone, Debug)]
 pub struct SymbolManager {
@@ -14,5 +14,9 @@ impl SymbolManager {
 
     pub fn get(&mut self, s: &str) -> DefaultSymbol {
         return self.interner.get_or_intern(s);
+    }
+
+    pub fn reserve(&mut self, s: &str) {
+        self.interner.get_or_intern(s);
     }
 }
