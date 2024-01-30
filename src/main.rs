@@ -528,11 +528,24 @@ fn builtin_exactly_equal(mut state: State) -> Result<State> {
     let a = checked_pop!(state);
     let b = checked_pop!(state);
 
-    state.stack.push(ParseNode {
-        kind: ParseKind::Symbol(state.symbols.get_bool(a == b)),
-        location: a.location,
-    });
-    return Ok(state);
+    return match (a.kind, b.kind) {
+        (ParseKind::Symbol(s1), ParseKind::Symbol(s2)) => {
+            state.stack.push(ParseNode {
+                kind: ParseKind::Symbol(state.symbols.get_bool(s1.eq(&s2))),
+                location: a.location,
+            });
+            Ok(state)
+        }
+        (ka, kb) => {
+            // TODO(ripta): when ParseNode locations are fixed, this will break;
+            //              properly impelement equality that ignores location
+            state.stack.push(ParseNode {
+                kind: ParseKind::Symbol(state.symbols.get_bool(ka == kb)),
+                location: a.location,
+            });
+            Ok(state)
+        }
+    };
 }
 
 fn builtin_assert(mut state: State) -> Result<State> {
