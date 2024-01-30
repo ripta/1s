@@ -664,6 +664,21 @@ fn builtin_stack_empty(state: crate::State) -> Result<crate::State> {
 fn builtin_show(mut state: State) -> Result<State> {
     let node = checked_pop!(state);
     return match node.kind {
+        ParseKind::FloatValue(f) => {
+            eprintln!("{}", f);
+            Ok(state)
+        }
+
+        ParseKind::IntegerValue(i) => {
+            eprintln!("{}", i);
+            Ok(state)
+        }
+
+        ParseKind::StringValue(s) => {
+            eprintln!("{}", s);
+            Ok(state)
+        }
+
         ParseKind::Symbol(sym) => match state.symbols.find(sym) {
             None => {
                 eprintln!("Symbol not found");
