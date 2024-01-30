@@ -912,13 +912,6 @@ fn parse_(symbols: &mut sym::SymbolManager, tokens: &mut Iter<Token>) -> Vec<Par
                             });
                         }
                         "]" => break,
-                        s if s.starts_with('#') => {
-                            let sym = symbols.get(&s[1..]);
-                            span.push(ParseNode {
-                                kind: ParseKind::Symbol(sym),
-                                location: token.location,
-                            });
-                        }
                         _ => span.push(ParseNode {
                             kind: ParseKind::WordRef(w.to_string()),
                             location: token.location,
