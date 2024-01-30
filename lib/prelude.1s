@@ -262,14 +262,17 @@
 -- (31) Conditionals
 -- VALUE [CHECK*] [BRANCH-TRUE*] [BRANCH-FALSE*] if
 -- [[BRANCH-n*] [CHECK-n*] ... [BRANCH-2*] [CHECK-2*] [BRANCH-1*] [CHECK-1*]] cond
+-- COND [BRANCH*] when
 --
 -- `if` is a native implementation of a primitive branching construct.
 --
 -- `if*` is a convenience word built on `if`, where the conditional is preserved when true.
 -- C [B*] [A*] if* == C dup [B*] [zap A*] if
 --
+-- `when` evaluates the quoted block when COND is #true.
 [ {IF} ] [ if ] :
 [ dup2 [ zap i ] [ 2zap1 i ] if ] [ if* ] :
+[ swap [ i ] [ zap ] if ] [ when ] :
 
 --
 -- (END) Ensure stack is empty after evaluation this file to verify that none
