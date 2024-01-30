@@ -564,6 +564,80 @@ fn builtin_floor(mut state: State) -> Result<State> {
     };
 }
 
+fn builtin_gt(mut state: State) -> Result<State> {
+    let node = checked_pop!(state);
+    return match node.kind {
+        ParseKind::FloatValue(a) => {
+            let b = get_float(&checked_pop!(state))?;
+            state.stack.push(ParseNode {
+                kind: ParseKind::Symbol(state.symbols.get_bool(b > a)),
+                location: state.clone().location,
+            });
+            Ok(state)
+        }
+
+        ParseKind::IntegerValue(a) => {
+            let b = get_integer(&checked_pop!(state))?;
+            state.stack.push(ParseNode {
+                kind: ParseKind::Symbol(state.symbols.get_bool(b > a)),
+                location: state.clone().location,
+            });
+            Ok(state)
+        }
+
+        ParseKind::StringValue(a) => {
+            let b = get_string(&checked_pop!(state))?;
+            state.stack.push(ParseNode {
+                kind: ParseKind::Symbol(state.symbols.get_bool(b > a)),
+                location: state.clone().location,
+            });
+            Ok(state)
+        }
+
+        _ => Err(EvaluationError::CannotOperate {
+            op: "{>}".to_string(),
+            value: node.clone(),
+        }),
+    };
+}
+
+fn builtin_gte(mut state: State) -> Result<State> {
+    let node = checked_pop!(state);
+    return match node.kind {
+        ParseKind::FloatValue(a) => {
+            let b = get_float(&checked_pop!(state))?;
+            state.stack.push(ParseNode {
+                kind: ParseKind::Symbol(state.symbols.get_bool(b >= a)),
+                location: state.clone().location,
+            });
+            Ok(state)
+        }
+
+        ParseKind::IntegerValue(a) => {
+            let b = get_integer(&checked_pop!(state))?;
+            state.stack.push(ParseNode {
+                kind: ParseKind::Symbol(state.symbols.get_bool(b >= a)),
+                location: state.clone().location,
+            });
+            Ok(state)
+        }
+
+        ParseKind::StringValue(a) => {
+            let b = get_string(&checked_pop!(state))?;
+            state.stack.push(ParseNode {
+                kind: ParseKind::Symbol(state.symbols.get_bool(b >= a)),
+                location: state.clone().location,
+            });
+            Ok(state)
+        }
+
+        _ => Err(EvaluationError::CannotOperate {
+            op: "{>=}".to_string(),
+            value: node.clone(),
+        }),
+    };
+}
+
 fn builtin_if(mut state: State) -> Result<State> {
     let false_sym = state.symbols.get_false();
     let true_sym = state.symbols.get_true();
@@ -589,6 +663,80 @@ fn builtin_if(mut state: State) -> Result<State> {
             ),
         }),
     }
+}
+
+fn builtin_lt(mut state: State) -> Result<State> {
+    let node = checked_pop!(state);
+    return match node.kind {
+        ParseKind::FloatValue(a) => {
+            let b = get_float(&checked_pop!(state))?;
+            state.stack.push(ParseNode {
+                kind: ParseKind::Symbol(state.symbols.get_bool(b < a)),
+                location: state.clone().location,
+            });
+            Ok(state)
+        }
+
+        ParseKind::IntegerValue(a) => {
+            let b = get_integer(&checked_pop!(state))?;
+            state.stack.push(ParseNode {
+                kind: ParseKind::Symbol(state.symbols.get_bool(b < a)),
+                location: state.clone().location,
+            });
+            Ok(state)
+        }
+
+        ParseKind::StringValue(a) => {
+            let b = get_string(&checked_pop!(state))?;
+            state.stack.push(ParseNode {
+                kind: ParseKind::Symbol(state.symbols.get_bool(b < a)),
+                location: state.clone().location,
+            });
+            Ok(state)
+        }
+
+        _ => Err(EvaluationError::CannotOperate {
+            op: "{<}".to_string(),
+            value: node.clone(),
+        }),
+    };
+}
+
+fn builtin_lte(mut state: State) -> Result<State> {
+    let node = checked_pop!(state);
+    return match node.kind {
+        ParseKind::FloatValue(a) => {
+            let b = get_float(&checked_pop!(state))?;
+            state.stack.push(ParseNode {
+                kind: ParseKind::Symbol(state.symbols.get_bool(b <= a)),
+                location: state.clone().location,
+            });
+            Ok(state)
+        }
+
+        ParseKind::IntegerValue(a) => {
+            let b = get_integer(&checked_pop!(state))?;
+            state.stack.push(ParseNode {
+                kind: ParseKind::Symbol(state.symbols.get_bool(b <= a)),
+                location: state.clone().location,
+            });
+            Ok(state)
+        }
+
+        ParseKind::StringValue(a) => {
+            let b = get_string(&checked_pop!(state))?;
+            state.stack.push(ParseNode {
+                kind: ParseKind::Symbol(state.symbols.get_bool(b <= a)),
+                location: state.clone().location,
+            });
+            Ok(state)
+        }
+
+        _ => Err(EvaluationError::CannotOperate {
+            op: "{<=}".to_string(),
+            value: node.clone(),
+        }),
+    };
 }
 
 fn builtin_mod(mut state: State) -> Result<State> {
@@ -1084,6 +1232,11 @@ impl State {
         defs.insert("{%}".to_string(), Code::Native("{%}".to_string(), builtin_mod));
         defs.insert("{*}".to_string(), Code::Native("{*}".to_string(), builtin_mul));
         defs.insert("{-}".to_string(), Code::Native("{-}".to_string(), builtin_sub));
+
+        defs.insert("{>}".to_string(), Code::Native("{>}".to_string(), builtin_gt));
+        defs.insert("{>=}".to_string(), Code::Native("{>=}".to_string(), builtin_gte));
+        defs.insert("{<}".to_string(), Code::Native("{<}".to_string(), builtin_lt));
+        defs.insert("{<=}".to_string(), Code::Native("{<=}".to_string(), builtin_lte));
 
         defs.insert("{⌈}".to_string(), Code::Native("{⌈}".to_string(), builtin_ceil));
         defs.insert("{⌊}".to_string(), Code::Native("{⌊}".to_string(), builtin_floor));
