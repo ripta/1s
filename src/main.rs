@@ -572,6 +572,33 @@ fn builtin_floor(mut state: State) -> Result<State> {
     return Ok(state);
 }
 
+fn builtin_if(mut state: State) -> Result<State> {
+    let false_sym = state.symbols.get_false();
+    let true_sym = state.symbols.get_true();
+
+    let mut false_branch = get_block(checked_pop!(state))?;
+    let mut true_branch = get_block(checked_pop!(state))?;
+
+    match get_sym(&checked_pop!(state))? {
+        sym if sym == false_sym => {
+            false_branch.reverse();
+            state.program.extend(false_branch);
+            Ok(state)
+        }
+        sym if sym == true_sym => {
+            true_branch.reverse();
+            state.program.extend(true_branch);
+            Ok(state)
+        }
+        sym => Err(EvaluationError::GuardViolation {
+            reason: format!(
+                "condition #{} is neither #true nor #false",
+                state.symbols.find(sym).unwrap()
+            ),
+        }),
+    }
+}
+
 fn builtin_mod(mut state: State) -> Result<State> {
     let node = checked_pop!(state);
     state = match node.kind {
@@ -1079,6 +1106,7 @@ impl State {
         defs.insert("{SHOW}".to_string(), Code::Native("{SHOW}".to_string(), builtin_show));
 
         defs.insert("{COND}".to_string(), Code::Native("{COND}".to_string(), builtin_cond));
+        defs.insert("{IF}".to_string(), Code::Native("{IF}".to_string(), builtin_if));
 
         return State {
             counter: (0usize, 0usize),
