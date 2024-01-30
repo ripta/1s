@@ -1,0 +1,17 @@
+-- EXPERIMENT
+-- Church-encoded booleans
+--
+-- `true` is a quoted block that returns the top of the stack when evaluated.
+-- `false` is a quoted block that returns the second from the top when evaluated.
+-- `not` is λp.(p false true)
+--
+-- Example: true [ 2 ] [ 1 ] if  == 1
+--          false [ 2 ] [ 1 ] if == 2
+--          true not [ 2 ] [ 1 ] if == 2
+[ [ k ] ] [ true ] :
+[ [ swap k ] ] [ false ] :
+[ 2dig i ] [ if ] :
+[ true false 2dig ] [ not ] :
+
+-- NOTE(ripta): this sort of works, but debugging this without a debugger is
+-- currently very tedious.
