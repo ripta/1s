@@ -93,6 +93,7 @@
 -- is also the base case for `1dig`, `1bury`, and `1flip`, which are
 -- all aliases.
 [ unit dip ] [ swap 1dig 1bury 1flip ] :
+[ swap cat ] [ swat prepose ] :
 
 -- (12) Native arithmetic operations on integers and floats
 [ {+} ] [ + ] :
@@ -277,15 +278,20 @@
 -- Iteration
 -- FROM TO [EACH*] upto
 -- TO [EACH*] 0,upto
+-- NUM [EACH*] times
 --
 -- `upto` applies the EACH* quoted block to each integer from FROM (inclusive) to TO (exclusive).
 --
 -- `0,upto` is a convenience word that hardcodes FROM to the value 0.
 --
+-- `times` evaluates the EACH* quoted block NUM times.
+--
 -- Example: 0 5 [ 2 * ] upto == 0 2 4 6 8
 --          5 [ 2 * ] 0,upto == 0 2 4 6 8
+--          3 [ 5 ] times == 5 5 5
 [ 2dup1 lt? [ [ swap zap i ] 3keep [ 1 + ] 2dip upto ] [ zap zap zap ] if ] [ upto ] :
 [ [ 0 ] 2dip upto ] [ 0,upto ] :
+[ [ zap ] swat 0,upto ] [ times ] :
 
 --
 -- (END) Ensure stack is empty after evaluation this file to verify that none
