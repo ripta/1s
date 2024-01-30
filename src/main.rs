@@ -224,6 +224,8 @@ enum EvaluationError {
     UnclosedString,
     #[snafu(display("incompatible value on stack: expected '{expected}', but found '{found}'"))]
     IncompatibleValue { expected: String, found: String },
+    #[snafu(display("stack underflow: {reason}"))]
+    ReasonedStackUnderflow { reason: String },
     #[snafu(display("stack underflow"))]
     StackUnderflow,
     #[snafu(display("{op}: cannot operate on {value}"))]
@@ -300,7 +302,9 @@ fn get_word(s: ParseNode) -> Result<String> {
 
 macro_rules! checked_pop {
     ( $e:expr ) => {
-        $e.stack.pop().ok_or(EvaluationError::StackUnderflow)?
+        $e.stack.pop().context(ReasonedStackUnderflowSnafu {
+            reason: "safe-popping from stack",
+        })?
     };
 }
 
@@ -415,8 +419,12 @@ fn builtin_cond(mut state: State) -> Result<State> {
 
     let mut s2 = state.clone();
     loop {
-        let check = get_block(cond.pop().ok_or(EvaluationError::StackUnderflow)?)?;
-        let mut branch = get_block(cond.pop().ok_or(EvaluationError::StackUnderflow)?)?;
+        let check = get_block(cond.pop().context(ReasonedStackUnderflowSnafu {
+            reason: "looking for a CHECK block in {COND}",
+        })?)?;
+        let mut branch = get_block(cond.pop().context(ReasonedStackUnderflowSnafu {
+            reason: "looking for a BRANCH block in {COND}",
+        })?)?;
 
         s2 = State::with(s2, check);
         s2 = run_state(s2, false)?;
