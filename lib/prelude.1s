@@ -10,6 +10,13 @@
 -- be evaluated to the unquoted BODY*.
 [ {:} ] [ : ] {:}
 
+-- Assert
+-- A A {==} == #true
+-- B A {==} == #false
+--
+-- {==} is the native implementation of recursive structural equality.
+[ {==} ] [ eq? ] :
+
 -- (2) Cons
 -- [REST*] [HEAD_n ... HEAD_1] {CONS} == [[REST*] HEAD_n ... HEAD_1]
 --

@@ -68,6 +68,13 @@ impl SymbolManager {
         return self.interner.get_or_intern(s);
     }
 
+    pub fn get_bool(&mut self, b: bool) -> DefaultSymbol {
+        if b {
+            return self.get_true();
+        }
+        return self.get_false();
+    }
+
     pub fn get_false(&mut self) -> DefaultSymbol {
         return self.interner.get_or_intern_static(SYM_FALSE);
     }

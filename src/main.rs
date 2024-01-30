@@ -519,15 +519,26 @@ fn builtin_div(mut state: State) -> Result<State> {
     return Ok(state);
 }
 
-fn builtin_exactly_equal(mut state: crate::State) -> Result<crate::State> {
+fn builtin_exactly_equal(mut state: State) -> Result<State> {
     let a = checked_pop!(state);
     let b = checked_pop!(state);
-    if a == b {
+
+    state.stack.push(ParseNode {
+        kind: ParseKind::Symbol(state.symbols.get_bool(a == b)),
+        location: a.location,
+    });
+    return Ok(state);
+}
+
+fn builtin_assert(mut state: State) -> Result<State> {
+    let msg = get_string(&checked_pop!(state))?;
+    let val = get_sym(&checked_pop!(state))?;
+
+    if val == state.symbols.get_true() {
         return Ok(state);
     }
-    return Err(EvaluationError::GuardViolation {
-        reason: "top two items on stack do not match exactly".to_string(),
-    });
+
+    return Err(EvaluationError::GuardViolation { reason: msg });
 }
 
 fn builtin_floor(mut state: State) -> Result<State> {
@@ -1015,9 +1026,10 @@ impl State {
         defs.insert("{:}".to_string(), Code::Native("{:}".to_string(), builtin_define));
         defs.insert("{ø}".to_string(), Code::Native("{ø}".to_string(), builtin_stack_empty));
         defs.insert(
-            "{=:=}".to_string(),
-            Code::Native("{=:=}".to_string(), builtin_exactly_equal),
+            "{==}".to_string(),
+            Code::Native("{==}".to_string(), builtin_exactly_equal),
         );
+        defs.insert("{!!}".to_string(), Code::Native("{!!}".to_string(), builtin_assert));
 
         defs.insert("{CONS}".to_string(), Code::Native("{CONS}".to_string(), builtin_cons));
         defs.insert("{K}".to_string(), Code::Native("{K}".to_string(), builtin_k));
