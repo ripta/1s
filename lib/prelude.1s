@@ -243,6 +243,33 @@
 [ swap cons ] [ swons ] :
 [ uncons swap ] [ unswons ] :
 
+-- (30) Show symbol
+[ dup {SHOW} ] [ show ] :
+
+-- (31) Conditionals
+-- [[BRANCH-n*] [CHECK-n*] ... [BRANCH-2*] [CHECK-2*] [BRANCH-1*] [CHECK-1*]] cond
+-- VALUE [CHECK*] [BRANCH-TRUE*] [BRANCH-FALSE*] if
+--
+-- `cond` is a native implementation of a series of condition checks. It evaluates
+-- the quoted block at the top of the stack. It evaluates the first block (CHECK-#).
+-- If the block results in a #true at the top of the stack, then the next block
+-- (BRANCH-#) is evaluated, and no other block is evaluated. Execution then
+-- continues normally.
+--
+-- Otherwise, if CHECK-# results in #false, then the next block (BRANCH-#) is skipped,
+-- and cond evaluates the next CHECK-# block.
+--
+-- If all CHECK-# blocks have been exhausted without a match, or if a BRANCH-# block
+-- is missing, then an error is thrown.
+--
+-- `if` is a convenience word built on `cond`, with a limited amount of branching and
+-- with a flipped block structure to allow the next element on the stack to be easily
+-- used as the CHECK block.
+--
+--
+[ {COND} ] [ cond ] :
+[ 4flip swap cons [ #true ] 2bury unit cons cons cons cond ] [ if ] :
+
 --
 -- (END) Ensure stack is empty after evaluation this file to verify that none
 -- of the definitions above leave stray words on the stack.
