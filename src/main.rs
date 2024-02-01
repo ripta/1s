@@ -689,6 +689,40 @@ fn builtin_if(mut state: State) -> Result<State> {
     }
 }
 
+fn builtin_len(mut state: State) -> Result<State> {
+    let node = checked_pop!(state);
+    return match node.kind {
+        ParseKind::Block(v) => {
+            state.stack.push(ParseNode {
+                kind: ParseKind::IntegerValue(v.len() as i64),
+                location: node.location,
+            });
+            Ok(state)
+        }
+
+        ParseKind::StringValue(s) => {
+            state.stack.push(ParseNode {
+                kind: ParseKind::IntegerValue(s.len() as i64),
+                location: node.location,
+            });
+            Ok(state)
+        }
+
+        ParseKind::Symbol(sym) if sym == state.symbols.get("stack") => {
+            state.stack.push(ParseNode {
+                kind: ParseKind::IntegerValue(state.stack.len() as i64),
+                location: node.location,
+            });
+            Ok(state)
+        }
+
+        t => Err(EvaluationError::IncompatibleValue {
+            expected: "string or #stack".to_string(),
+            found: t.to_string(),
+        }),
+    };
+}
+
 fn builtin_lt(mut state: State) -> Result<State> {
     let node = checked_pop!(state);
     return match node.kind {
@@ -1277,6 +1311,7 @@ impl State {
         defs.insert("√2".to_string(), Code::Native("√2".to_string(), builtin_const_sqrt2));
         defs.insert("π".to_string(), Code::Native("π".to_string(), builtin_const_pi));
 
+        defs.insert("{LEN}".to_string(), Code::Native("{LEN}".to_string(), builtin_len));
         defs.insert("{SHOW}".to_string(), Code::Native("{SHOW}".to_string(), builtin_show));
 
         defs.insert("{COND}".to_string(), Code::Native("{COND}".to_string(), builtin_cond));

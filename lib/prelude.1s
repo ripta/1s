@@ -309,6 +309,20 @@
 -- Random numbers
 [ {RAND:ChaCha20} ] [ rand ] :
 
+-- Stack length
+--
+-- `len` is a native implementation that pushes to the stack: (a) the length of the
+-- string at the top of the stack, (b) the length of a quoted block at the top of
+-- the stack, or (c) if the symbol #stack, then the length of the stack. The word
+-- errors in all other cases.
+--
+-- The top of the stack is popped, which means in the case of the symbolic #stack,
+-- this word pushes the depth of the stack minus the symbol #stack itself.
+--
+-- Example: 11 22 33 44 #stack len == 11 22 33 44 4
+--          "Hello" dup len == "Hello" 5
+[ {LEN} ] [ len ] :
+
 --
 -- (END) Ensure stack is empty after evaluation this file to verify that none
 -- of the definitions above leave stray words on the stack.
