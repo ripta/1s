@@ -306,6 +306,9 @@
 -- Boolean operations
 [ [ #false ] [ #true ] if ] [ bool! ] :
 
+-- Random numbers
+[ {RAND:ChaCha20} ] [ rand ] :
+
 --
 -- (END) Ensure stack is empty after evaluation this file to verify that none
 -- of the definitions above leave stray words on the stack.

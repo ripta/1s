@@ -1,5 +1,8 @@
 mod sym;
 
+use rand::Rng;
+use rand_chacha::rand_core::SeedableRng;
+use rand_chacha::ChaCha20Rng;
 use rustyline::DefaultEditor;
 use snafu::prelude::*;
 use std::collections::HashMap;
@@ -929,6 +932,15 @@ fn builtin_k(mut state: State) -> Result<State> {
     return Ok(state);
 }
 
+fn builtin_rand(mut state: State) -> Result<State> {
+    let i: i64 = ChaCha20Rng::from_entropy().sample(rand::distributions::Standard);
+    state.stack.push(ParseNode {
+        kind: ParseKind::IntegerValue(i),
+        location: state.location.clone(),
+    });
+    return Ok(state);
+}
+
 fn builtin_sip(mut state: State) -> Result<State> {
     let a = get_block(checked_pop!(state))?;
     let b = checked_pop!(state);
@@ -1269,6 +1281,11 @@ impl State {
 
         defs.insert("{COND}".to_string(), Code::Native("{COND}".to_string(), builtin_cond));
         defs.insert("{IF}".to_string(), Code::Native("{IF}".to_string(), builtin_if));
+
+        defs.insert(
+            "{RAND:ChaCha20}".to_string(),
+            Code::Native("{RAND:ChaCha20}".to_string(), builtin_rand),
+        );
 
         return State {
             counter: (0usize, 0usize),
