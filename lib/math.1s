@@ -1,0 +1,10 @@
+-- `fib:iter` the iterative version of fibonacci
+--
+-- Example: 10 fib:iter == 55
+--          6 11 [ fib:iter ] upto == 8 13 21 34 55
+[ dup 2 lt? [ [ 0 1 ] dip [ swap [ + ] sip ] times zap ] unwhen ] [ fib:iter ] :
+
+-- `fib:rec` the recursive version of fibonacci
+--
+-- Example: 10 fib:rec == 55
+[ dup 2 lt? [ [ 1 swap - fib:rec ] [ 2 swap - fib:rec ] both + ] unwhen ] [ fib:rec ] :
