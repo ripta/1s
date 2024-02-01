@@ -84,7 +84,7 @@
 --
 -- `cat` concatenates the two quoted blocks at the top of the stack
 -- into one quoted block.
-[ [ [ i ] dip i ] cons cons ] [ cat ] :
+[ [ [ i ] dip i ] cons cons ] [ cat compose ] :
 
 -- (11) Swap
 -- [B*] [A*] swap == [A*] [B*]
@@ -261,7 +261,7 @@
 [ dup {SHOW} ] [ show ] :
 
 -- (31) Conditionals
--- VALUE [CHECK*] [BRANCH-TRUE*] [BRANCH-FALSE*] if
+-- COND [BRANCH-TRUE*] [BRANCH-FALSE*] if
 -- [[BRANCH-n*] [CHECK-n*] ... [BRANCH-2*] [CHECK-2*] [BRANCH-1*] [CHECK-1*]] cond
 -- COND [BRANCH*] when
 --
@@ -274,6 +274,7 @@
 [ {IF} ] [ if ] :
 [ dup2 [ zap i ] [ 2zap1 i ] if ] [ if* ] :
 [ swap [ i ] [ zap ] if ] [ when ] :
+[ swap [ zap ] [ i ] if ] [ unwhen ] :
 
 -- Iteration
 -- FROM TO [EACH*] upto
@@ -292,6 +293,18 @@
 [ 2dup1 lt? [ [ swap zap i ] 3keep [ 1 + ] 2dip upto ] [ zap zap zap ] if ] [ upto ] :
 [ [ 0 ] 2dip upto ] [ 0,upto ] :
 [ [ zap ] swat 0,upto ] [ times ] :
+[ dup 2dip ] [ once ] :
+
+-- Looping
+--
+-- Example: 1 [ dup 2 * dup 16 lt? ] loop      == 1 2 4 8 16
+--          1 [ dup 16 lt? ] [ dup 2 * ] while == 1 2 4 8 16
+[ [ i ] sip [ loop ] cons when ] [ loop ] :
+[ swap cat [ loop ] cons i ] [ while ] :
+-- [ [ [ dup ] cat ] dip while zap ] [ while* ] :
+
+-- Boolean operations
+[ [ #false ] [ #true ] if ] [ bool! ] :
 
 --
 -- (END) Ensure stack is empty after evaluation this file to verify that none
