@@ -502,7 +502,13 @@ fn builtin_div(mut state: State) -> Result<State> {
     return match node.kind {
         ParseKind::Block(b) => {
             let vals = b.iter().map(get_integer).collect::<Result<Vec<i64>>>()?;
-            let sum = vals.iter().fold(0, |acc, v| acc / v);
+            let sum = vals
+                .iter()
+                .copied()
+                .reduce(|acc, v| acc / v)
+                .context(ReasonedStackUnderflowSnafu {
+                    reason: "no elements to divide",
+                })?;
             state.stack.push(ParseNode {
                 kind: ParseKind::IntegerValue(sum),
                 location: node.location,
@@ -513,7 +519,7 @@ fn builtin_div(mut state: State) -> Result<State> {
         ParseKind::FloatValue(a) => {
             let b = get_float(&checked_pop!(state))?;
             state.stack.push(ParseNode {
-                kind: ParseKind::FloatValue(a / b),
+                kind: ParseKind::FloatValue(b / a),
                 location: node.location,
             });
             Ok(state)
@@ -522,7 +528,7 @@ fn builtin_div(mut state: State) -> Result<State> {
         ParseKind::IntegerValue(a) => {
             let b = get_integer(&checked_pop!(state))?;
             state.stack.push(ParseNode {
-                kind: ParseKind::IntegerValue(a / b),
+                kind: ParseKind::IntegerValue(b / a),
                 location: node.location,
             });
             Ok(state)
