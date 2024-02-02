@@ -840,7 +840,7 @@ fn builtin_mul(mut state: State) -> Result<State> {
     return match node.kind {
         ParseKind::Block(b) => {
             let vals = b.iter().map(get_integer).collect::<Result<Vec<i64>>>()?;
-            let sum = vals.iter().fold(0, |acc, v| acc * v);
+            let sum = vals.iter().fold(1, |acc, v| acc * v);
             state.stack.push(ParseNode {
                 kind: ParseKind::IntegerValue(sum),
                 location: node.location,
