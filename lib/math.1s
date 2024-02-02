@@ -7,4 +7,4 @@
 -- `fib:rec` the recursive version of fibonacci
 --
 -- Example: 10 fib:rec == 55
-[ dup 2 lt? [ [ 1 swap - fib:rec ] [ 2 swap - fib:rec ] both + ] unwhen ] [ fib:rec ] :
+[ dup 2 lt? [ [ 1 - fib:rec ] [ 2 - fib:rec ] both + ] unwhen ] [ fib:rec ] :
