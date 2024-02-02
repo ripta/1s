@@ -1287,8 +1287,6 @@ struct State {
 
 impl State {
     fn new() -> State {
-        let mut symbols = sym::SymbolManager::new();
-
         let mut defs = HashMap::with_capacity(64);
 
         defs.insert("{:}".to_string(), Code::Native("{:}".to_string(), builtin_define));
@@ -1338,7 +1336,7 @@ impl State {
             counter: (0usize, 0usize),
             location: Location::Source(0usize, 0usize),
             stack: Vec::with_capacity(64),
-            symbols: symbols,
+            symbols: sym::SymbolManager::new(),
             definitions: defs,
             program: Vec::with_capacity(64),
         };

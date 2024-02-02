@@ -1,5 +1,5 @@
 use std::collections::{HashMap, HashSet};
-use string_interner::{DefaultSymbol, StringInterner, Symbol};
+use string_interner::{DefaultSymbol, StringInterner};
 
 #[derive(Clone, Debug)]
 pub struct SymbolManager {
