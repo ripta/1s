@@ -323,6 +323,16 @@
 --          "Hello" dup len == "Hello" 5
 [ {LEN} ] [ len ] :
 
+-- Symbol attributes and properties
+--
+-- Symbols have queryable attributes and properties. They cannot be set or be
+-- modified at runtime (yet?)
+--
+-- Example: #true #instance_of prop show => #bool
+--          #true #static attr? show => #true
+[ {SYM:attr?} ] [ attr? ] :
+[ {SYM:prop} ] [ prop ] :
+
 --
 -- (END) Ensure stack is empty after evaluation this file to verify that none
 -- of the definitions above leave stray words on the stack.

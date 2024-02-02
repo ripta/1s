@@ -968,6 +968,38 @@ fn builtin_sub(mut state: State) -> Result<State> {
     };
 }
 
+fn builtin_sym_attr(mut state: State) -> Result<State> {
+    let attr = get_sym(&checked_pop!(state))?;
+    let sym = get_sym(&checked_pop!(state))?;
+
+    let val = state.symbols.attribute(&sym, &attr);
+    state.stack.push(ParseNode {
+        kind: ParseKind::Symbol(state.symbols.get_bool(val)),
+        location: state.location.clone(),
+    });
+
+    return Ok(state);
+}
+
+fn builtin_sym_prop(mut state: State) -> Result<State> {
+    let key = get_sym(&checked_pop!(state))?;
+    let sym = get_sym(&checked_pop!(state))?;
+
+    let none = state.symbols.get("none");
+    match state.symbols.property(&sym, &key) {
+        None => state.stack.push(ParseNode {
+            kind: ParseKind::Symbol(none),
+            location: state.location.clone(),
+        }),
+        Some(val) => state.stack.push(ParseNode {
+            kind: ParseKind::Symbol(*val),
+            location: state.location.clone(),
+        }),
+    }
+
+    return Ok(state);
+}
+
 fn builtin_k(mut state: State) -> Result<State> {
     let mut a = get_block(checked_pop!(state))?;
     checked_pop!(state);
@@ -1323,6 +1355,15 @@ impl State {
 
         defs.insert("{LEN}".to_string(), Code::Native("{LEN}".to_string(), builtin_len));
         defs.insert("{SHOW}".to_string(), Code::Native("{SHOW}".to_string(), builtin_show));
+
+        defs.insert(
+            "{SYM:attr?}".to_string(),
+            Code::Native("{SYM:attr?}".to_string(), builtin_sym_attr),
+        );
+        defs.insert(
+            "{SYM:prop}".to_string(),
+            Code::Native("{SYM:prop}".to_string(), builtin_sym_prop),
+        );
 
         defs.insert("{COND}".to_string(), Code::Native("{COND}".to_string(), builtin_cond));
         defs.insert("{IF}".to_string(), Code::Native("{IF}".to_string(), builtin_if));
