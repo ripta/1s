@@ -1,7 +1,7 @@
-use crate::{state, sym};
+use crate::sym;
 use rand::{Rng, SeedableRng};
 use rand_chacha::ChaCha20Rng;
-use snafu::{OptionExt, ResultExt, Snafu};
+use snafu::{ResultExt, Snafu};
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 use std::slice::Iter;
@@ -132,73 +132,67 @@ pub fn read_file(filename: String) -> Result<String> {
 fn get_block(s: ParseNode) -> Result<Vec<ParseNode>> {
     match s.kind {
         ParseKind::Block(b) => Ok(b.to_vec()),
-        otherwise => IncompatibleValueSnafu {
-            expected: "quoted block",
+        otherwise => Err(EvaluationError::IncompatibleValue {
+            expected: "quoted block".to_string(),
             found: otherwise.to_string(),
-        }
-        .fail(),
+        }),
     }
 }
 
 fn get_float(s: &ParseNode) -> Result<f64> {
     match s.clone().kind {
         ParseKind::FloatValue(f) => Ok(f),
-        otherwise => IncompatibleValueSnafu {
-            expected: "float",
+        otherwise => Err(EvaluationError::IncompatibleValue {
+            expected: "float".to_string(),
             found: otherwise.to_string(),
-        }
-        .fail(),
+        }),
     }
 }
 
 fn get_integer(s: &ParseNode) -> Result<i64> {
     match s.clone().kind {
         ParseKind::IntegerValue(i) => Ok(i),
-        otherwise => IncompatibleValueSnafu {
-            expected: "integer",
+        otherwise => Err(EvaluationError::IncompatibleValue {
+            expected: "integer".to_string(),
             found: otherwise.to_string(),
-        }
-        .fail(),
+        }),
     }
 }
 
 fn get_string(s: &ParseNode) -> Result<String> {
     match s.clone().kind {
         ParseKind::StringValue(s) => Ok(s),
-        otherwise => IncompatibleValueSnafu {
-            expected: "string",
+        otherwise => Err(EvaluationError::IncompatibleValue {
+            expected: "string".to_string(),
             found: otherwise.to_string(),
-        }
-        .fail(),
+        }),
     }
 }
 
 fn get_sym(s: &ParseNode) -> Result<DefaultSymbol> {
     match s.clone().kind {
         ParseKind::Symbol(s) => Ok(s),
-        otherwise => IncompatibleValueSnafu {
-            expected: "symbol",
+        otherwise => Err(EvaluationError::IncompatibleValue {
+            expected: "symbol".to_string(),
             found: otherwise.to_string(),
-        }
-        .fail(),
+        }),
     }
 }
 
 fn get_word(s: ParseNode) -> Result<String> {
     match s.kind {
         ParseKind::WordRef(w) => Ok(w.to_string()),
-        otherwise => IncompatibleValueSnafu {
-            expected: "word",
+        otherwise => Err(EvaluationError::IncompatibleValue {
+            expected: "word".to_string(),
             found: otherwise.to_string(),
-        }
-        .fail(),
+        }),
     }
 }
 
 macro_rules! checked_pop {
     ( $e:expr ) => {
-        $e.stack.pop().context(ReasonedStackUnderflowSnafu {
-            reason: "safe-popping from stack",
+        $e.stack.pop().ok_or(EvaluationError::ReasonedStackUnderflow {
+            reason: "safe-popping from stack".to_string(),
         })?
     };
 }
@@ -310,11 +304,11 @@ fn builtin_cond(mut state: State) -> Result<State> {
 
     let mut s2 = state.clone();
     loop {
-        let check = get_block(cond.pop().context(ReasonedStackUnderflowSnafu {
-            reason: "looking for a CHECK block in {COND}",
+        let check = get_block(cond.pop().ok_or(EvaluationError::ReasonedStackUnderflow {
+            reason: "looking for a CHECK block in {COND}".to_string(),
         })?)?;
-        let mut branch = get_block(cond.pop().context(ReasonedStackUnderflowSnafu {
-            reason: "looking for a BRANCH block in {COND}",
+        let mut branch = get_block(cond.pop().ok_or(EvaluationError::ReasonedStackUnderflow {
+            reason: "looking for a BRANCH block in {COND}".to_string(),
         })?)?;
 
         s2 = State::with(s2, check);
@@ -390,8 +384,8 @@ fn builtin_div(mut state: State) -> Result<State> {
                 .iter()
                 .copied()
                 .reduce(|acc, v| acc / v)
-                .context(ReasonedStackUnderflowSnafu {
-                    reason: "no elements to divide",
+                .ok_or(EvaluationError::ReasonedStackUnderflow {
+                    reason: "no elements to divide".to_string(),
                 })?;
             state.stack.push(ParseNode {
                 kind: ParseKind::IntegerValue(sum),
@@ -696,8 +690,8 @@ fn builtin_mod(mut state: State) -> Result<State> {
                 .iter()
                 .copied()
                 .reduce(|acc, v| acc % v)
-                .context(ReasonedStackUnderflowSnafu {
-                    reason: "no elements to mod",
+                .ok_or(EvaluationError::ReasonedStackUnderflow {
+                    reason: "no elements to mod".to_string(),
                 })?;
             state.stack.push(ParseNode {
                 kind: ParseKind::IntegerValue(sum),
@@ -835,8 +829,8 @@ fn builtin_sub(mut state: State) -> Result<State> {
                 .iter()
                 .copied()
                 .reduce(|acc, v| acc - v)
-                .context(ReasonedStackUnderflowSnafu {
-                    reason: "no elements to subtract",
+                .ok_or(EvaluationError::ReasonedStackUnderflow {
+                    reason: "no elements to subtract".to_string(),
                 })?;
             state.stack.push(ParseNode {
                 kind: ParseKind::IntegerValue(sum),
