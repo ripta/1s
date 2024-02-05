@@ -5,6 +5,7 @@ use rand_chacha::ChaCha20Rng;
 use snafu::{ResultExt, Snafu};
 use std::collections::HashMap;
 use std::fmt::Display;
+use std::path::Path;
 use std::result;
 use std::time::Instant;
 use string_interner::DefaultSymbol;
@@ -94,9 +95,9 @@ impl From<lexer::LexerError> for EvaluationError {
     }
 }
 
-pub fn read_file(filename: String) -> Result<String> {
-    return std::fs::read_to_string(filename.clone()).context(FileLoadSnafu {
-        filename: filename.clone(),
+pub fn read_file<P: AsRef<Path>>(path: P) -> Result<String> {
+    return std::fs::read_to_string(path.as_ref()).context(FileLoadSnafu {
+        filename: path.as_ref().to_str().unwrap().to_string(),
     });
 }
 
