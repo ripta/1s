@@ -775,12 +775,6 @@ fn builtin_nth_get(mut state: State) -> Result<State> {
         });
     }
 
-    if index < 0 {
-        return Err(EvaluationError::GuardViolation {
-            reason: "index underflow".to_string(),
-        });
-    }
-
     state.stack.push(node.index(index).clone());
     return Ok(state);
 }
@@ -799,12 +793,6 @@ fn builtin_nth_set(mut state: State) -> Result<State> {
     if index >= node.len() {
         return Err(EvaluationError::GuardViolation {
             reason: "index out of bounds".to_string(),
-        });
-    }
-
-    if index < 0 {
-        return Err(EvaluationError::GuardViolation {
-            reason: "index underflow".to_string(),
         });
     }
 
