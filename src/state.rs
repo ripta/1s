@@ -1,4 +1,5 @@
 use crate::parser::{ParseKind, ParseNode};
+use crate::sym::SymbolManager;
 use crate::{lexer, parser, sym};
 use rand::{Rng, SeedableRng};
 use rand_chacha::ChaCha20Rng;
@@ -587,8 +588,10 @@ fn builtin_load(mut state: State) -> Result<State> {
     let t0 = Instant::now();
     state = run_string(state, content, false)?;
 
-    let dur = t0.elapsed().as_micros();
-    println!("{filename:?} {{LOAD}} [ #size {size} #runtime_µs {dur} ]");
+    if state.symbols.has_trace() {
+        let dur = t0.elapsed().as_micros();
+        println!("{filename:?} {{LOAD}} [ #size {size} #runtime_µs {dur} ]");
+    }
 
     return Ok(state);
 }
@@ -941,7 +944,7 @@ pub struct State {
 }
 
 impl State {
-    pub fn new() -> State {
+    pub fn new(sm: SymbolManager) -> State {
         let mut defs = HashMap::with_capacity(64);
 
         defs.insert("{:}".to_string(), Code::Native("{:}".to_string(), builtin_define));
@@ -1006,7 +1009,7 @@ impl State {
             counter: (0usize, 0usize),
             location: lexer::Location::Source(0usize, 0usize),
             stack: Vec::with_capacity(64),
-            symbols: sym::SymbolManager::new(),
+            symbols: sm,
             definitions: defs,
             program: Vec::with_capacity(64),
         };

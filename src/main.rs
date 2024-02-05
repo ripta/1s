@@ -79,7 +79,10 @@ impl From<ReadlineError> for Error {
 type Result<T> = result::Result<T, Error>;
 
 fn run(flags: Flags) -> Result<u8> {
-    let mut state = State::new();
+    let mut sm = sym::SymbolManager::new();
+    sm.set_trace(flags.trace_load);
+
+    let mut state = State::new(sm);
     if !flags.no_banner {
         println!("-- 1s :: {} v{}", PKG_NAME, PKG_VERSION);
     }
