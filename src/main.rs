@@ -9,9 +9,13 @@ use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 use std::iter::Iterator;
 use std::slice::Iter;
+use std::string::ToString;
 use std::time::Instant;
 use std::{fmt, result};
 use string_interner::DefaultSymbol;
+
+const PKG_NAME: &str = env!("CARGO_PKG_NAME");
+const PKG_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 fn main() {
     let flags = parse_args();
@@ -29,6 +33,7 @@ fn main() {
 #[derive(Debug)]
 struct Flags {
     interactive: bool,
+    no_banner: bool,
     trace_exec: bool,
     trace_load: bool,
     files: Vec<String>,
@@ -36,9 +41,9 @@ struct Flags {
 
 fn parse_args() -> Result<Flags> {
     let mut args = pico_args::Arguments::from_env();
-    // let filenames: Vec<String> = env::args().skip(1).collect();
     let mut flags = Flags {
         interactive: args.contains("-i"),
+        no_banner: args.contains("-q"),
         trace_exec: args.contains("-t"),
         trace_load: args.contains("-l"),
         files: Vec::new(),
@@ -54,6 +59,10 @@ fn parse_args() -> Result<Flags> {
 
 fn run(flags: Flags) -> Result<u8> {
     let mut state = State::new();
+    if !flags.no_banner {
+        println!("-- 1s :: {} v{}", PKG_NAME, PKG_VERSION);
+    }
+
     for filename in flags.files {
         let content = std::fs::read_to_string(filename.clone()).context(FileLoadSnafu {
             filename: filename.clone(),
