@@ -9,6 +9,7 @@ use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 use std::iter::Iterator;
 use std::slice::Iter;
+use std::time::Instant;
 use std::{fmt, result};
 use string_interner::DefaultSymbol;
 
@@ -29,6 +30,7 @@ fn main() {
 struct Flags {
     interactive: bool,
     trace_exec: bool,
+    trace_load: bool,
     files: Vec<String>,
 }
 
@@ -38,6 +40,7 @@ fn parse_args() -> Result<Flags> {
     let mut flags = Flags {
         interactive: args.contains("-i"),
         trace_exec: args.contains("-t"),
+        trace_load: args.contains("-l"),
         files: Vec::new(),
     };
 
@@ -57,9 +60,13 @@ fn run(flags: Flags) -> Result<u8> {
         })?;
 
         let size = content.len();
-        println!("READ {filename} SIZE {size}");
-
+        let t0 = Instant::now();
         state = run_string(state, content, flags.trace_exec)?;
+
+        let dur = t0.elapsed().as_micros();
+        if flags.trace_load {
+            println!("{filename:?} load [ #size {size} #runtime_µs {dur} ]");
+        }
     }
 
     if flags.interactive {
