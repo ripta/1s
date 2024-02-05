@@ -65,7 +65,7 @@ fn run(flags: Flags) -> Result<u8> {
 
         let dur = t0.elapsed().as_micros();
         if flags.trace_load {
-            println!("{filename:?} load [ #size {size} #runtime_µs {dur} ]");
+            println!("{filename:?} {{LOAD}} [ #size {size} #runtime_µs {dur} ]");
         }
     }
 
@@ -903,38 +903,50 @@ fn builtin_stack_empty(state: crate::State) -> Result<crate::State> {
 
 fn builtin_show(mut state: State) -> Result<State> {
     let node = checked_pop!(state);
-    return match node.kind {
+    builtin_show_node(&state.symbols, node)?;
+    eprintln!();
+    return Ok(state);
+}
+
+fn builtin_show_node(symbols: &sym::SymbolManager, node: ParseNode) -> Result<()> {
+    match node.kind {
         ParseKind::FloatValue(f) => {
-            eprintln!("{}", f);
-            Ok(state)
+            eprint!("{} ", f);
+            Ok(())
         }
 
         ParseKind::IntegerValue(i) => {
-            eprintln!("{}", i);
-            Ok(state)
+            eprint!("{} ", i);
+            Ok(())
         }
 
         ParseKind::StringValue(s) => {
-            eprintln!("{}", s);
-            Ok(state)
+            eprint!("{:?} ", s);
+            Ok(())
         }
 
-        ParseKind::Symbol(sym) => match state.symbols.find(sym) {
-            None => {
-                eprintln!("Symbol not found");
-                Ok(state)
-            }
+        ParseKind::Symbol(sym) => match symbols.find(sym) {
+            None => Err(EvaluationError::GuardViolation {
+                reason: "!!BUG!! symbol should have existed, but doesn't".to_string(),
+            }),
             Some(s) => {
-                eprintln!("Symbol: {}", s);
-                Ok(state)
+                eprint!("#{} ", s);
+                Ok(())
             }
         },
 
-        _ => Err(EvaluationError::CannotOperate {
-            op: "{SHOW}".to_string(),
-            value: node.clone(),
-        }),
-    };
+        ParseKind::Block(nodes) => {
+            for node in nodes {
+                builtin_show_node(symbols, node)?;
+            }
+            Ok(())
+        }
+
+        ParseKind::WordRef(word) => {
+            eprint!("{} ", word);
+            Ok(())
+        }
+    }
 }
 
 fn builtin_sub(mut state: State) -> Result<State> {

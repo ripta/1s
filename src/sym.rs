@@ -87,7 +87,7 @@ impl SymbolManager {
         return self.interner.get_or_intern_static(SYM_TRUE);
     }
 
-    pub fn find(&mut self, sym: DefaultSymbol) -> Option<&str> {
+    pub fn find(&self, sym: DefaultSymbol) -> Option<&str> {
         return self.interner.resolve(sym);
     }
 
