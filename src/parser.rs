@@ -76,9 +76,9 @@ impl PartialEq for ParseKind {
     }
 }
 
-pub fn parse(symbols: &mut sym::SymbolManager, tokens: Vec<lexer::Token>) -> state::Result<ParseTree> {
+pub fn parse(symbols: &mut sym::SymbolManager, tokens: Vec<lexer::Token>) -> ParseTree {
     let top = parse_(symbols, &mut tokens.iter());
-    return Ok(ParseTree { top_level: top });
+    return ParseTree { top_level: top };
 }
 
 /// parse_ is the recursive version of parse, during which the (linear) stream of tokens is converted into one or more

@@ -1,12 +1,12 @@
 use crate::parser::{ParseKind, ParseNode};
-use crate::{lexer, parser, sym, Error};
+use crate::{lexer, parser, sym};
 use rand::{Rng, SeedableRng};
 use rand_chacha::ChaCha20Rng;
 use snafu::{ResultExt, Snafu};
 use std::collections::HashMap;
-use std::fmt::{Display, Formatter};
+use std::fmt::Display;
+use std::result;
 use std::time::Instant;
-use std::{fmt, result};
 use string_interner::DefaultSymbol;
 
 pub fn run_string(mut state: State, content: String, trace_exec: bool) -> Result<State> {
@@ -15,7 +15,7 @@ pub fn run_string(mut state: State, content: String, trace_exec: bool) -> Result
         println!("LEXED-TOKENS {}", tokens.len());
     }
 
-    let pt = parser::parse(&mut state.symbols, tokens)?;
+    let pt = parser::parse(&mut state.symbols, tokens);
 
     let mut prog = pt.top_level.clone();
     prog.reverse();
