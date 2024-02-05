@@ -5,6 +5,7 @@ use rand::{Rng, SeedableRng};
 use rand_chacha::ChaCha20Rng;
 use snafu::{ResultExt, Snafu};
 use std::collections::HashMap;
+use std::ops::{Index, IndexMut};
 use std::path::Path;
 use std::result;
 use std::time::Instant;
@@ -758,6 +759,65 @@ fn builtin_mul(mut state: State) -> Result<State> {
     };
 }
 
+fn builtin_nth_get(mut state: State) -> Result<State> {
+    let node = get_block(checked_pop!(state))?;
+    let index = get_integer(&checked_pop!(state))? as usize;
+
+    if node.len() == 0 {
+        return Err(EvaluationError::GuardViolation {
+            reason: "block is empty".to_string(),
+        });
+    }
+
+    if index >= node.len() {
+        return Err(EvaluationError::GuardViolation {
+            reason: "index out of bounds".to_string(),
+        });
+    }
+
+    if index < 0 {
+        return Err(EvaluationError::GuardViolation {
+            reason: "index underflow".to_string(),
+        });
+    }
+
+    state.stack.push(node.index(index).clone());
+    return Ok(state);
+}
+
+fn builtin_nth_set(mut state: State) -> Result<State> {
+    let mut node = get_block(checked_pop!(state))?;
+    let index = get_integer(&checked_pop!(state))? as usize;
+    let element = checked_pop!(state);
+
+    if node.len() == 0 {
+        return Err(EvaluationError::GuardViolation {
+            reason: "block is empty".to_string(),
+        });
+    }
+
+    if index >= node.len() {
+        return Err(EvaluationError::GuardViolation {
+            reason: "index out of bounds".to_string(),
+        });
+    }
+
+    if index < 0 {
+        return Err(EvaluationError::GuardViolation {
+            reason: "index underflow".to_string(),
+        });
+    }
+
+    node.remove(index);
+    node.insert(index, element);
+    state.stack.push(ParseNode {
+        kind: ParseKind::Block(node),
+        location: state.location.clone(),
+    });
+
+    return Ok(state);
+}
+
 fn builtin_stack_empty(state: State) -> Result<State> {
     if state.stack.is_empty() {
         return Ok(state);
@@ -987,6 +1047,11 @@ impl State {
 
         defs.insert("{LEN}".to_string(), Code::Native("{LEN}".to_string(), builtin_len));
         defs.insert("{LOAD}".to_string(), Code::Native("{LOAD}".to_string(), builtin_load));
+        defs.insert("{NTH}".to_string(), Code::Native("{NTH}".to_string(), builtin_nth_get));
+        defs.insert(
+            "{NTH=}".to_string(),
+            Code::Native("{NTH=}".to_string(), builtin_nth_set),
+        );
         defs.insert("{SHOW}".to_string(), Code::Native("{SHOW}".to_string(), builtin_show));
         defs.insert(
             "{RELTIME}".to_string(),
