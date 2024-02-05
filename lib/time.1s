@@ -1,0 +1,27 @@
+-- time/.
+-- time/. == t0
+--
+-- `time/.` pushes the relative time at moment of evaluation onto the top of
+-- the stack. The relative time is defined as the value on a monotonically
+-- increasing clock, measured since the start of the 1s interpreter ("t0"),
+-- in seconds up to nanosecond precision depending on platform.
+--
+-- The t0 time is taken before any operations, including loading prelude.
+-- Taking the relative time at the beginning of your code will approximate
+-- the overhead of loading any preludes and libraries.
+--
+-- Example: time/. == 3.21312903
+[ {RELTIME} ] [ time/. ] :
+
+-- time/bench
+-- [A*] time/bench == T
+--
+-- `time/bench` evaluates the quoted block at the top of the stack, and pushes
+-- the time, elapsed while evaluating, onto the stack. The quoted block must
+-- not have any stack effect.
+--
+-- Elapsed time appears in seconds, with fractional components up to nanosecond
+-- precision, depending on platform.
+--
+-- Example: [ 20 fib:iter zap ] time/bench == 0.249741561
+[ time/. i time/. swap - ] [ time/bench ] :
