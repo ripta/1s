@@ -586,7 +586,13 @@ fn builtin_load(mut state: State) -> Result<State> {
 
     let size = content.len();
     let t0 = Instant::now();
-    state = run_string(state, content, false)?;
+
+    let tokens = lexer::lex(content)?;
+    let pt = parser::parse(&mut state.symbols, tokens);
+    let mut prog = pt.top_level;
+
+    prog.reverse();
+    state.program.append(prog.as_mut());
 
     if state.symbols.has_trace() {
         let dur = t0.elapsed().as_micros();
