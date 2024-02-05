@@ -1,0 +1,6 @@
+"lib/math.1s" {LOAD}
+
+5 10 max
+10 5 max
+-8 8 max
+8 -8 max

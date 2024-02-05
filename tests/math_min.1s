@@ -1,0 +1,6 @@
+"lib/math.1s" {LOAD}
+
+12 6 min
+6 12 min
+-5 5 min
+5 -5 min
