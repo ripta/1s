@@ -1,21 +1,21 @@
-use crate::sym;
+use crate::parser::{ParseKind, ParseNode};
+use crate::{lexer, parser, sym, Error};
 use rand::{Rng, SeedableRng};
 use rand_chacha::ChaCha20Rng;
 use snafu::{ResultExt, Snafu};
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
-use std::slice::Iter;
 use std::time::Instant;
 use std::{fmt, result};
 use string_interner::DefaultSymbol;
 
 pub fn run_string(mut state: State, content: String, trace_exec: bool) -> Result<State> {
-    let tokens = lex(content)?;
+    let tokens = lexer::lex(content)?;
     if trace_exec {
         println!("LEXED-TOKENS {}", tokens.len());
     }
 
-    let pt = parse(&mut state.symbols, tokens)?;
+    let pt = parser::parse(&mut state.symbols, tokens)?;
 
     let mut prog = pt.top_level.clone();
     prog.reverse();
@@ -62,33 +62,6 @@ pub fn dump_definitions(definitions: HashMap<String, Code>) -> Vec<String> {
     return def_names;
 }
 
-#[derive(Debug, Clone)]
-pub struct Token {
-    kind: TokenKind,
-    location: Location,
-}
-
-#[derive(Debug, Clone)]
-pub enum TokenKind {
-    Comment(String),
-    LiteralFloat(f64),
-    LiteralInteger(i64),
-    LiteralString(String),
-    Word(String),
-}
-
-#[derive(Debug, Clone)]
-pub enum Location {
-    Evaluation(usize),
-    Source(usize, usize),
-}
-
-impl Display for Token {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "{:?}", self)
-    }
-}
-
 pub type Result<T> = result::Result<T, EvaluationError>;
 
 #[derive(Debug, Snafu)]
@@ -99,16 +72,8 @@ pub enum EvaluationError {
     InvalidFlag { source: pico_args::Error },
     #[snafu(display("cannot load file '{filename}'"))]
     FileLoad { source: std::io::Error, filename: String },
-    #[snafu(display("invalid float token '{token}'"))]
-    InvalidFloatToken {
-        source: std::num::ParseFloatError,
-        token: String,
-    },
-    #[snafu(display("invalid integer token '{token}'"))]
-    InvalidIntegerToken {
-        source: std::num::ParseIntError,
-        token: String,
-    },
+    #[snafu(display("lexing error: {source}"))]
+    LexingError { source: lexer::LexerError },
     #[snafu(display("unclosed string"))]
     UnclosedString,
     #[snafu(display("incompatible value on stack: expected '{expected}', but found '{found}'"))]
@@ -120,7 +85,13 @@ pub enum EvaluationError {
     #[snafu(display("{op}: cannot operate on {value}"))]
     CannotOperate { op: String, value: ParseNode },
     #[snafu(display("word '{word}' is undefined"))]
-    UndefinedWord { word: String, location: Location },
+    UndefinedWord { word: String, location: lexer::Location },
+}
+
+impl From<lexer::LexerError> for EvaluationError {
+    fn from(value: lexer::LexerError) -> Self {
+        return EvaluationError::LexingError { source: value };
+    }
 }
 
 pub fn read_file(filename: String) -> Result<String> {
@@ -936,274 +907,6 @@ fn builtin_time(mut state: State) -> Result<State> {
     return Ok(state);
 }
 
-fn is_float(word: String) -> bool {
-    if word.len() < 2 {
-        return false;
-    }
-    // TODO(ripta): refine criterion, e.g., 2.1e5, .1, 1.2.3
-    if word.chars().all(|c| matches!(c, '0'..='9' | '.')) {
-        return true;
-    }
-    if word.starts_with('-') && word.len() > 1 {
-        return match word.chars().nth(1) {
-            Some(c) if c.is_ascii_digit() => true,
-            _ => false,
-        };
-    }
-    return false;
-}
-
-fn is_integer(word: String) -> bool {
-    if word.chars().all(|c| c.is_ascii_digit()) {
-        return true;
-    }
-    if word.contains('.') {
-        return false;
-    }
-    if word.starts_with('-') && word.len() > 1 {
-        return match word.chars().nth(1) {
-            Some(c) if c.is_ascii_digit() => true,
-            _ => false,
-        };
-    }
-    return false;
-}
-
-pub fn lex(content: String) -> Result<Vec<Token>> {
-    let lines = content
-        .split("\n")
-        .map(|line| line.split_whitespace().map(str::to_string));
-
-    let mut buf = String::new();
-    let mut in_comment = false;
-    let mut in_string = false;
-    let mut comment_word_num = 0usize;
-
-    let mut tokens: Vec<Token> = Vec::new();
-    for (line_num, words) in lines.enumerate() {
-        for (word_num, word) in words.enumerate() {
-            let loc = Location::Source(line_num, word_num);
-
-            if in_comment {
-                buf.push_str(" ");
-                buf.push_str(&word);
-                continue;
-            }
-
-            if in_string {
-                buf.push_str(" ");
-
-                if word.ends_with('"') {
-                    in_string = false;
-                    buf.push_str(&word[0..word.len() - 1]);
-                    tokens.push(Token {
-                        kind: TokenKind::LiteralString(buf.to_string()),
-                        location: Location::Source(line_num, word_num),
-                    });
-                    continue;
-                }
-
-                buf.push_str(&word);
-                continue;
-            }
-
-            // TODO(ripta): stop compressing away multiple whitespace characters in comments
-            if word.len() >= 2 && word.chars().all(|c| c == '-') {
-                in_comment = true;
-                comment_word_num = word_num;
-                buf.push_str(&word);
-                continue;
-            }
-
-            if word.len() >= 2 && word.starts_with("\"") && word.ends_with("\"") {
-                tokens.push(Token {
-                    kind: TokenKind::LiteralString(word[1..word.len() - 1].to_string()),
-                    location: loc,
-                });
-                continue;
-            } else if word.len() >= 2 && word.starts_with('"') {
-                in_string = true;
-                buf.push_str(&word[1..]);
-                continue;
-            }
-
-            if is_integer(word.clone()) {
-                // word.chars().all(|c| matches!(c, '0'..='9' | '-' | '_' | '.'))
-                // i64::from_str();
-                let v = word.parse().context(InvalidIntegerTokenSnafu { token: word })?;
-                tokens.push(Token {
-                    kind: TokenKind::LiteralInteger(v),
-                    location: loc,
-                });
-                continue;
-            }
-
-            if is_float(word.clone()) {
-                let v = word.parse().context(InvalidFloatTokenSnafu { token: word })?;
-                tokens.push(Token {
-                    kind: TokenKind::LiteralFloat(v),
-                    location: loc,
-                });
-                continue;
-            }
-
-            tokens.push(Token {
-                kind: TokenKind::Word(word),
-                location: loc,
-            });
-        }
-
-        if in_comment {
-            tokens.push(Token {
-                kind: TokenKind::Comment(buf.to_string()),
-                location: Location::Source(line_num, comment_word_num),
-            });
-
-            in_comment = false;
-            comment_word_num = 0;
-        }
-    }
-
-    if in_string {
-        return Err(EvaluationError::UnclosedString);
-    }
-
-    return Ok(tokens);
-}
-
-#[derive(Debug)]
-pub struct ParseTree {
-    pub top_level: Vec<ParseNode>,
-}
-
-#[derive(Debug, Clone)]
-pub struct ParseNode {
-    kind: ParseKind,
-    location: Location,
-}
-
-impl Display for ParseNode {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        match &self.kind {
-            ParseKind::Block(vs) => {
-                write!(f, "[ ")?;
-                for v in vs {
-                    write!(f, "{} ", v)?;
-                }
-                write!(f, "]")?;
-                Ok(())
-            }
-            ParseKind::FloatValue(v) => write!(f, "{:?}", v),
-            ParseKind::IntegerValue(v) => write!(f, "{:?}", v),
-            ParseKind::StringValue(v) => write!(f, "{:?}", v),
-            ParseKind::Symbol(s) => write!(f, "{:?}", s),
-            ParseKind::WordRef(w) => write!(f, "{}", w),
-            // _ => write!(f, "{:?}", self),
-        }
-    }
-}
-
-impl PartialEq for ParseNode {
-    fn eq(&self, other: &Self) -> bool {
-        return self.kind == other.kind;
-    }
-}
-
-#[derive(Debug, Clone)]
-enum ParseKind {
-    // Binding(String, Vec<Semantic>),
-    Block(Vec<ParseNode>),
-    // Compiled(
-    //     String,
-    //     fn(Vec<Semantic>) -> Result<Vec<Semantic>>,
-    // ),
-    FloatValue(f64),
-    IntegerValue(i64),
-    StringValue(String),
-    Symbol(DefaultSymbol),
-    WordRef(String),
-}
-
-impl Display for ParseKind {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "{:?}", self)
-    }
-}
-
-impl PartialEq for ParseKind {
-    fn eq(&self, other: &Self) -> bool {
-        match (self, other) {
-            (ParseKind::Block(b1), ParseKind::Block(b2)) => b1 == b2,
-            (ParseKind::FloatValue(f1), ParseKind::FloatValue(f2)) => *f1 == *f2,
-            (ParseKind::IntegerValue(i1), ParseKind::IntegerValue(i2)) => *i1 == *i2,
-            (ParseKind::StringValue(s1), ParseKind::StringValue(s2)) => s1.eq(s2),
-            (ParseKind::WordRef(w1), ParseKind::WordRef(w2)) => w1.eq(w2),
-            (_, _) => false,
-        }
-    }
-}
-
-pub fn parse(symbols: &mut sym::SymbolManager, tokens: Vec<Token>) -> Result<ParseTree> {
-    let top = parse_(symbols, &mut tokens.iter());
-    return Ok(ParseTree { top_level: top });
-}
-
-/// parse_ is the recursive version of parse, during which the (linear) stream of tokens is converted into one or more
-/// levels of nested blocks.
-///
-/// TODO(ripta): recursive descent
-fn parse_(symbols: &mut sym::SymbolManager, tokens: &mut Iter<Token>) -> Vec<ParseNode> {
-    let mut span: Vec<ParseNode> = Vec::with_capacity(8);
-
-    loop {
-        let token = tokens.next();
-        match token {
-            None => break,
-            Some(token) => {
-                let token = token.clone();
-                match token.kind {
-                    TokenKind::Comment(_) => {}
-                    TokenKind::LiteralFloat(f) => span.push(ParseNode {
-                        kind: ParseKind::FloatValue(f),
-                        location: token.location,
-                    }),
-                    TokenKind::LiteralInteger(d) => span.push(ParseNode {
-                        kind: ParseKind::IntegerValue(d),
-                        location: token.location,
-                    }),
-                    TokenKind::LiteralString(s) => span.push(ParseNode {
-                        kind: ParseKind::StringValue(s),
-                        location: token.location,
-                    }),
-                    TokenKind::Word(w) => match w.as_str() {
-                        "[" => {
-                            let block = parse_(symbols, tokens);
-                            span.push(ParseNode {
-                                kind: ParseKind::Block(block),
-                                location: token.location,
-                            });
-                        }
-                        "]" => break,
-                        s if s.starts_with('#') => {
-                            let sym = symbols.get(&s[1..]);
-                            span.push(ParseNode {
-                                kind: ParseKind::Symbol(sym),
-                                location: token.location,
-                            });
-                        }
-                        _ => span.push(ParseNode {
-                            kind: ParseKind::WordRef(w.to_string()),
-                            location: token.location,
-                        }),
-                    },
-                }
-            }
-        }
-    }
-
-    return span;
-}
-
 #[derive(Debug, Clone)]
 pub enum Code {
     Native(String, fn(State) -> Result<State>),
@@ -1214,7 +917,7 @@ pub enum Code {
 pub struct State {
     pub t0: Instant,
     pub counter: (usize, usize),
-    pub location: Location,
+    pub location: lexer::Location,
 
     pub stack: Vec<ParseNode>,
     pub program: Vec<ParseNode>,
@@ -1285,7 +988,7 @@ impl State {
         return State {
             t0: Instant::now(),
             counter: (0usize, 0usize),
-            location: Location::Source(0usize, 0usize),
+            location: lexer::Location::Source(0usize, 0usize),
             stack: Vec::with_capacity(64),
             symbols: sym::SymbolManager::new(),
             definitions: defs,

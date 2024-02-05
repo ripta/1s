@@ -1,3 +1,5 @@
+mod lexer;
+mod parser;
 mod state;
 mod sym;
 
