@@ -1,4 +1,4 @@
-1 dup eq?
-[ 2 ] dup eq?
-[ 3 4 ] dup eq?
-[ [ 5 ] 6 ] dup eq?
+1 dup
+[ 2 ] dup
+[ 3 4 ] dup
+[ [ 5 ] 6 ] dup

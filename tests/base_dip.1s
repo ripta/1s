@@ -2,11 +2,7 @@
 
 -- Implementation 1: from prelude
 [ ignored ] [ 3 4 + ] dip
-unit cons
 
 -- Implementation 2: from equivalence derivation
 -- [ swap unit cat i ] [ dip ] :
 [ ignored ] [ 3 4 + ] swap unit cat i
-unit cons
-
-eq?
