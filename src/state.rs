@@ -4,7 +4,6 @@ use rand::{Rng, SeedableRng};
 use rand_chacha::ChaCha20Rng;
 use snafu::{ResultExt, Snafu};
 use std::collections::HashMap;
-use std::fmt::Display;
 use std::path::Path;
 use std::result;
 use std::time::Instant;
@@ -735,7 +734,7 @@ fn builtin_mul(mut state: State) -> Result<State> {
     };
 }
 
-fn builtin_stack_empty(state: crate::State) -> Result<crate::State> {
+fn builtin_stack_empty(state: State) -> Result<State> {
     if state.stack.is_empty() {
         return Ok(state);
     }

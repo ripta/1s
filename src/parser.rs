@@ -1,4 +1,4 @@
-use crate::{lexer, state, sym};
+use crate::{lexer, sym};
 use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::slice::Iter;
