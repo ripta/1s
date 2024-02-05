@@ -8,6 +8,8 @@ pub struct SymbolManager {
     attrs: HashMap<DefaultSymbol, HashSet<DefaultSymbol>>,
 }
 
+const SYM_1S: &str = "1s";
+
 const SYM_PROP: &str = "prop";
 const SYM_ATTR: &str = "attr";
 const SYM_STATIC: &str = "static";
@@ -27,6 +29,8 @@ impl SymbolManager {
 
         let mut props = HashMap::new();
         let mut attrs = HashMap::new();
+
+        let s_1s = interner.get_or_intern_static(SYM_1S);
 
         let s_attr = interner.get_or_intern_static(SYM_ATTR);
         attrs.insert(s_attr, HashSet::from([s_attr]));
@@ -61,11 +65,24 @@ impl SymbolManager {
         props.insert(s_true, HashMap::from([(s_iof, s_bool)]));
         attrs.insert(s_true, HashSet::from([s_multiton, s_static]));
 
+        attrs.insert(s_1s, HashSet::from([s_static]));
+
         return SymbolManager { interner, props, attrs };
+    }
+
+    pub fn as_bool(&mut self, sym: DefaultSymbol) -> bool {
+        if sym == self.get_false() {
+            return false;
+        }
+        return true;
     }
 
     pub fn get(&mut self, s: &str) -> DefaultSymbol {
         return self.interner.get_or_intern(s);
+    }
+
+    pub fn get_1s(&mut self) -> DefaultSymbol {
+        return self.interner.get_or_intern_static(SYM_1S);
     }
 
     pub fn get_bool(&mut self, b: bool) -> DefaultSymbol {
@@ -98,7 +115,41 @@ impl SymbolManager {
         };
     }
 
+    pub fn reset_attribute(&mut self, sym: &DefaultSymbol, attr: &DefaultSymbol) {
+        match self.attrs.get_mut(sym) {
+            Some(ats) if ats.contains(attr) => ats.remove(attr),
+            _ => false,
+        };
+    }
+
+    pub fn set_attribute(&mut self, sym: &DefaultSymbol, attr: &DefaultSymbol) {
+        match self.attrs.get_mut(sym) {
+            Some(ats) if !ats.contains(attr) => ats.insert(*attr),
+            _ => {
+                self.attrs.insert(*sym, HashSet::from([*attr]));
+                true
+            }
+        };
+    }
+
     pub fn property(&mut self, sym: &DefaultSymbol, key: &DefaultSymbol) -> Option<&DefaultSymbol> {
         return self.props.get(sym)?.get(key);
+    }
+
+    pub fn has_trace(&mut self) -> bool {
+        let s_1s = self.get_1s();
+        let s_trace = self.get("trace");
+        return self.attribute(&s_1s, &s_trace);
+    }
+
+    pub fn set_trace(&mut self, v: bool) {
+        let s_1s = self.get_1s();
+        let s_trace = self.get("trace");
+
+        if v {
+            self.set_attribute(&s_1s, &s_trace);
+        } else {
+            self.reset_attribute(&s_1s, &s_trace);
+        }
     }
 }
