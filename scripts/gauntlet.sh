@@ -33,6 +33,9 @@ for file in tests/*.1s; do
   if [[ -n "$update" ]]; then
     echo "UPDATE $out"
     ./target/debug/1s -q lib/prelude.1s $file > $out
+  elif [[ ! -f "$out" ]]; then
+    echo "EMPTY $out"
+    touch $out
   fi
   if diff -u $out <(./target/debug/1s -q lib/prelude.1s $file); then
     echo "OK $file"
