@@ -23,7 +23,12 @@
 -- {CONS} is the native implementation of consing, which consumes two quoted
 -- blocks from the stack. The second quoted block is appended to the tail
 -- of the first quoted block. Both quoted blocks remain unevaluated.
+--
+-- Example: 5 [ 4 ] cons == [ 5 4 ]
+--          5 4 [ 3 ] cons == 5 [ 4 3 ]
+--          5 4 [ 3 ] 2cons == [ 5 4 3 ]
 [ {CONS} ] [ cons ] :
+[ cons cons ] [ 2cons ] :
 
 -- (3) Sip
 -- [B*] [A*] sip == [B*] A [B*]
@@ -69,7 +74,9 @@
 --
 -- `zap` discards the top of the stack without evaluating it.
 [ [ ] k ] [ zap ] :
+[ zap zap ] [ 2zap ] :
 [ swap zap swap zap ] [ 2zap1 ] :
+[ zap zap zap ] [ 3zap ] :
 
 -- (9) Dip
 -- [B*] [A*] dip == A [B*]
@@ -332,6 +339,10 @@
 --          #true #static attr? show => #true
 [ {SYM:attr?} ] [ attr? ] :
 [ {SYM:prop} ] [ prop ] :
+
+-- Example: 3 0 [ 1 1 1 1 1 ] nth=
+[ {NTH} ] [ nth ] :
+[ {NTH=} ] [ nth= ] :
 
 --
 -- (END) Ensure stack is empty after evaluation this file to verify that none
