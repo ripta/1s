@@ -45,7 +45,7 @@ impl Display for Token {
     }
 }
 
-fn is_float(word: String) -> bool {
+fn is_float(word: &str) -> bool {
     if word.len() < 2 {
         return false;
     }
@@ -53,7 +53,7 @@ fn is_float(word: String) -> bool {
     if word.chars().all(|c| matches!(c, '0'..='9' | '.')) {
         return true;
     }
-    if word.starts_with('-') && word.len() > 1 {
+    if word.starts_with('-') && word.len() > 2 {
         return match word.chars().nth(1) {
             Some(c) if c.is_ascii_digit() => true,
             _ => false,
@@ -62,7 +62,10 @@ fn is_float(word: String) -> bool {
     return false;
 }
 
-fn is_integer(word: String) -> bool {
+fn is_integer(word: &str) -> bool {
+    if word.len() < 1 {
+        return false;
+    }
     if word.chars().all(|c| c.is_ascii_digit()) {
         return true;
     }
@@ -136,7 +139,7 @@ pub fn lex(content: String) -> state::Result<Vec<Token>> {
                 continue;
             }
 
-            if is_integer(word.clone()) {
+            if is_integer(&word) {
                 // word.chars().all(|c| matches!(c, '0'..='9' | '-' | '_' | '.'))
                 // i64::from_str();
                 let v = word.parse().context(InvalidIntegerTokenSnafu { token: word })?;
@@ -147,7 +150,7 @@ pub fn lex(content: String) -> state::Result<Vec<Token>> {
                 continue;
             }
 
-            if is_float(word.clone()) {
+            if is_float(&word) {
                 let v = word.parse().context(InvalidFloatTokenSnafu { token: word })?;
                 tokens.push(Token {
                     kind: TokenKind::LiteralFloat(v),
@@ -178,4 +181,39 @@ pub fn lex(content: String) -> state::Result<Vec<Token>> {
     }
 
     return Ok(tokens);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_is_float() {
+        assert_eq!(is_float(""), false);
+        assert_eq!(is_float("foo"), false);
+
+        assert_eq!(is_float("1"), false);
+        assert_eq!(is_float("-1"), false);
+
+        assert_eq!(is_float("1."), true);
+        assert_eq!(is_float("-1."), true);
+
+        assert_eq!(is_float("1.2"), true);
+        assert_eq!(is_float("-1.2"), true);
+    }
+
+    #[test]
+    fn test_is_integer() {
+        assert_eq!(is_integer(""), false);
+        assert_eq!(is_integer("foo"), false);
+
+        assert_eq!(is_integer("1"), true);
+        assert_eq!(is_integer("-1"), true);
+
+        assert_eq!(is_integer("1."), false);
+        assert_eq!(is_integer("-1."), false);
+
+        assert_eq!(is_integer("1.2"), false);
+        assert_eq!(is_integer("-1.2"), false);
+    }
 }
