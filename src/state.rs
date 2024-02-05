@@ -16,12 +16,12 @@ pub fn run_string(mut state: State, content: String, trace_exec: bool) -> Result
     }
 
     let pt = parser::parse(&mut state.symbols, tokens);
+    return run_program(state, pt.top_level, trace_exec);
+}
 
-    let mut prog = pt.top_level.clone();
+pub fn run_program(mut state: State, mut prog: Vec<ParseNode>, trace_exec: bool) -> Result<State> {
     prog.reverse();
-
-    let s = State::with(state, prog);
-    return run_state(s, trace_exec);
+    return run_state(State::with(state, prog), trace_exec);
 }
 
 pub fn run_state(mut s: State, trace_exec: bool) -> Result<State> {
@@ -578,6 +578,21 @@ fn builtin_len(mut state: State) -> Result<State> {
     };
 }
 
+fn builtin_load(mut state: State) -> Result<State> {
+    let filename = get_string(&checked_pop!(state))?;
+
+    let content = read_file(filename.clone())?;
+
+    let size = content.len();
+    let t0 = Instant::now();
+    state = run_string(state, content, false)?;
+
+    let dur = t0.elapsed().as_micros();
+    println!("{filename:?} {{LOAD}} [ #size {size} #runtime_µs {dur} ]");
+
+    return Ok(state);
+}
+
 fn builtin_lt(mut state: State) -> Result<State> {
     let node = checked_pop!(state);
     return match node.kind {
@@ -962,6 +977,7 @@ impl State {
         defs.insert("π".to_string(), Code::Native("π".to_string(), builtin_const_pi));
 
         defs.insert("{LEN}".to_string(), Code::Native("{LEN}".to_string(), builtin_len));
+        defs.insert("{LOAD}".to_string(), Code::Native("{LOAD}".to_string(), builtin_load));
         defs.insert("{SHOW}".to_string(), Code::Native("{SHOW}".to_string(), builtin_show));
         defs.insert(
             "{RELTIME}".to_string(),

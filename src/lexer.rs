@@ -35,6 +35,7 @@ pub enum TokenKind {
 
 #[derive(Debug, Clone)]
 pub enum Location {
+    Static(&'static str),
     Evaluation(usize),
     Source(usize, usize),
 }

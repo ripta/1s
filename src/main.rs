@@ -3,6 +3,8 @@ mod parser;
 mod state;
 mod sym;
 
+use crate::lexer::Location;
+use crate::parser::{ParseKind, ParseNode};
 use rustyline::error::ReadlineError;
 use rustyline::DefaultEditor;
 use snafu::prelude::*;
@@ -10,7 +12,6 @@ use state::{EvaluationError, State};
 use std::iter::Iterator;
 use std::result;
 use std::string::ToString;
-use std::time::Instant;
 
 const PKG_NAME: &str = env!("CARGO_PKG_NAME");
 const PKG_VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -84,16 +85,17 @@ fn run(flags: Flags) -> Result<u8> {
     }
 
     for filename in flags.files {
-        let content = state::read_file(filename.clone())?;
-
-        let size = content.len();
-        let t0 = Instant::now();
-        state = state::run_string(state, content, flags.trace_exec)?;
-
-        let dur = t0.elapsed().as_micros();
-        if flags.trace_load {
-            println!("{filename:?} {{LOAD}} [ #size {size} #runtime_µs {dur} ]");
-        }
+        let loader = vec![
+            ParseNode {
+                kind: ParseKind::StringValue(filename),
+                location: Location::Static("1s::run"),
+            },
+            ParseNode {
+                kind: ParseKind::WordRef("{LOAD}".to_string()),
+                location: Location::Static("1s::run"),
+            },
+        ];
+        state = state::run_program(state, loader, flags.trace_exec)?;
     }
 
     if flags.interactive {
