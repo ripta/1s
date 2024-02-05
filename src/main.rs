@@ -1066,6 +1066,14 @@ fn builtin_sip(mut state: State) -> Result<State> {
     return Ok(state);
 }
 
+fn builtin_time(mut state: State) -> Result<State> {
+    state.stack.push(ParseNode {
+        kind: ParseKind::FloatValue(state.t0.elapsed().as_secs_f64()),
+        location: state.location.clone(),
+    });
+    return Ok(state);
+}
+
 fn is_float(word: String) -> bool {
     if word.len() < 2 {
         return false;
@@ -1342,6 +1350,7 @@ enum Code {
 
 #[derive(Debug, Clone)]
 struct State {
+    t0: Instant,
     counter: (usize, usize),
     location: Location,
 
@@ -1389,6 +1398,10 @@ impl State {
 
         defs.insert("{LEN}".to_string(), Code::Native("{LEN}".to_string(), builtin_len));
         defs.insert("{SHOW}".to_string(), Code::Native("{SHOW}".to_string(), builtin_show));
+        defs.insert(
+            "{RELTIME}".to_string(),
+            Code::Native("{RELTIME}".to_string(), builtin_time),
+        );
 
         defs.insert(
             "{SYM:attr?}".to_string(),
@@ -1408,6 +1421,7 @@ impl State {
         );
 
         return State {
+            t0: Instant::now(),
             counter: (0usize, 0usize),
             location: Location::Source(0usize, 0usize),
             stack: Vec::with_capacity(64),
@@ -1419,6 +1433,7 @@ impl State {
 
     fn with(s: State, tl: Vec<ParseNode>) -> State {
         return State {
+            t0: s.t0,
             counter: s.counter,
             location: s.location,
             stack: s.stack,
