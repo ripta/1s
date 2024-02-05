@@ -1,3 +1,12 @@
+-- `min` takes the two top of the stack and pushes the smaller of the two
+-- back onto the stack. `max` takes the two top of the stack and pushes the
+-- larger of the two back onto the stack.
+--
+-- Example: 10 5 min == 5
+--          10 5 max == 10
+[ 2dup gt? [ swap zap ] [ zap ] if ] [ min ] :
+[ 2dup lt? [ swap zap ] [ zap ] if ] [ max ] :
+
 -- `fib:iter` the iterative version of fibonacci
 --
 -- Example: 10 fib:iter == 55
