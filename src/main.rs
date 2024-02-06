@@ -158,7 +158,7 @@ fn run(flags: Flags) -> Result<u8> {
                 }
             }
 
-            print!("\n");
+            println!();
         }
     } else {
         // println!("RESULT {:?}", state.stack);

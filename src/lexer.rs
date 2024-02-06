@@ -55,16 +55,13 @@ fn is_float(word: &str) -> bool {
         return true;
     }
     if word.starts_with('-') && word.len() > 2 {
-        return match word.chars().nth(1) {
-            Some(c) if c.is_ascii_digit() => true,
-            _ => false,
-        };
+        return matches!(word.chars().nth(1), Some(c) if c.is_ascii_digit());
     }
     return false;
 }
 
 fn is_integer(word: &str) -> bool {
-    if word.len() < 1 {
+    if word.is_empty() {
         return false;
     }
     if word.chars().all(|c| c.is_ascii_digit()) {
@@ -74,17 +71,14 @@ fn is_integer(word: &str) -> bool {
         return false;
     }
     if word.starts_with('-') && word.len() > 1 {
-        return match word.chars().nth(1) {
-            Some(c) if c.is_ascii_digit() => true,
-            _ => false,
-        };
+        return matches!(word.chars().nth(1), Some(c) if c.is_ascii_digit());
     }
     return false;
 }
 
 pub fn lex(content: String) -> state::Result<Vec<Token>> {
     let lines = content
-        .split("\n")
+        .split('\n')
         .map(|line| line.split_whitespace().map(str::to_string));
 
     let mut buf = String::new();
@@ -98,13 +92,13 @@ pub fn lex(content: String) -> state::Result<Vec<Token>> {
             let loc = Location::Source(line_num, word_num);
 
             if in_comment {
-                buf.push_str(" ");
+                buf.push(' ');
                 buf.push_str(&word);
                 continue;
             }
 
             if in_string {
-                buf.push_str(" ");
+                buf.push(' ');
 
                 if word.ends_with('"') {
                     in_string = false;
@@ -128,7 +122,7 @@ pub fn lex(content: String) -> state::Result<Vec<Token>> {
                 continue;
             }
 
-            if word.len() >= 2 && word.starts_with("\"") && word.ends_with("\"") {
+            if word.len() >= 2 && word.starts_with('\"') && word.ends_with('\"') {
                 tokens.push(Token {
                     kind: TokenKind::LiteralString(word[1..word.len() - 1].to_string()),
                     location: loc,

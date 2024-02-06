@@ -5,7 +5,7 @@ use rand::{Rng, SeedableRng};
 use rand_chacha::ChaCha20Rng;
 use snafu::{ResultExt, Snafu};
 use std::collections::HashMap;
-use std::ops::{Index, IndexMut};
+use std::ops::Index;
 use std::path::Path;
 use std::result;
 use std::time::Instant;
@@ -21,7 +21,7 @@ pub fn run_string(mut state: State, content: String, trace_exec: bool) -> Result
     return run_program(state, pt.top_level, trace_exec);
 }
 
-pub fn run_program(mut state: State, mut prog: Vec<ParseNode>, trace_exec: bool) -> Result<State> {
+pub fn run_program(state: State, mut prog: Vec<ParseNode>, trace_exec: bool) -> Result<State> {
     prog.reverse();
     return run_state(State::with(state, prog), trace_exec);
 }
@@ -33,7 +33,7 @@ pub fn run_state(mut s: State, trace_exec: bool) -> Result<State> {
         println!("  Program: {:?}", s.program);
 
         println!("  Definitions: {:?}", dump_definitions(s.clone().definitions));
-        print!("\n");
+        println!();
     }
 
     while !s.program.is_empty() {
@@ -48,7 +48,7 @@ pub fn run_state(mut s: State, trace_exec: bool) -> Result<State> {
             println!("  Program: {:?}", s.program);
 
             println!("  Definitions: {:?}", dump_definitions(s.clone().definitions));
-            print!("\n");
+            println!();
         }
     }
 
@@ -57,7 +57,7 @@ pub fn run_state(mut s: State, trace_exec: bool) -> Result<State> {
 
 pub fn dump_definitions(definitions: HashMap<String, Code>) -> Vec<String> {
     let mut def_names: Vec<String> = Vec::with_capacity(definitions.len());
-    for (def_name, _) in &definitions {
+    for def_name in definitions.keys() {
         def_names.push(def_name.to_string());
     }
     def_names.sort();
@@ -175,7 +175,7 @@ fn builtin_add(mut state: State) -> Result<State> {
     return match node.kind {
         ParseKind::Block(b) => {
             let vals = b.iter().map(get_integer).collect::<Result<Vec<i64>>>()?;
-            let sum = vals.iter().fold(0, |acc, v| acc + v);
+            let sum = vals.iter().sum::<i64>();
             state.stack.push(ParseNode {
                 kind: ParseKind::IntegerValue(sum),
                 location: node.location,
@@ -225,7 +225,7 @@ fn builtin_car(mut state: State) -> Result<State> {
     let mut a = get_block(checked_pop!(state))?;
 
     // `car` of an empty block is itself an empty block, so ignore removal of an already empty block
-    if a.len() > 0 {
+    if !a.is_empty() {
         a.remove(0);
     }
     state.stack.push(ParseNode {
@@ -726,7 +726,7 @@ fn builtin_mul(mut state: State) -> Result<State> {
     return match node.kind {
         ParseKind::Block(b) => {
             let vals = b.iter().map(get_integer).collect::<Result<Vec<i64>>>()?;
-            let sum = vals.iter().fold(1, |acc, v| acc * v);
+            let sum = vals.iter().product::<i64>();
             state.stack.push(ParseNode {
                 kind: ParseKind::IntegerValue(sum),
                 location: node.location,
@@ -763,7 +763,7 @@ fn builtin_nth_get(mut state: State) -> Result<State> {
     let node = get_block(checked_pop!(state))?;
     let index = get_integer(&checked_pop!(state))? as usize;
 
-    if node.len() == 0 {
+    if node.is_empty() {
         return Err(EvaluationError::GuardViolation {
             reason: "block is empty".to_string(),
         });
@@ -779,12 +779,13 @@ fn builtin_nth_get(mut state: State) -> Result<State> {
     return Ok(state);
 }
 
+// TODO(ripta): nth= usually leaves nothing on the stack, but modifies the seq
 fn builtin_nth_set(mut state: State) -> Result<State> {
     let mut node = get_block(checked_pop!(state))?;
     let index = get_integer(&checked_pop!(state))? as usize;
     let element = checked_pop!(state);
 
-    if node.len() == 0 {
+    if node.is_empty() {
         return Err(EvaluationError::GuardViolation {
             reason: "block is empty".to_string(),
         });
@@ -1113,7 +1114,7 @@ pub fn eval(mut state: State) -> Result<State> {
         }
         ParseKind::WordRef(word) => {
             match state.definitions.get(&word).ok_or(EvaluationError::UndefinedWord {
-                word: word,
+                word,
                 location: item.location,
             })? {
                 Code::Native(_, f) => {
