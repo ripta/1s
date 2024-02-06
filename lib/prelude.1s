@@ -310,9 +310,6 @@
 [ swap cat [ loop ] cons i ] [ while ] :
 -- [ [ [ dup ] cat ] dip while zap ] [ while* ] :
 
--- Boolean operations
-[ [ #false ] [ #true ] if ] [ bool! ] :
-
 -- Random numbers
 [ {RAND:ChaCha20} ] [ rand ] :
 

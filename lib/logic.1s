@@ -1,0 +1,5 @@
+-- Boolean operations
+[ [ #false ] [ #true ] if ] [ ! bool_not ] :
+[ [ [ #true ] [ #false ] if ] [ zap #false ] if ] [ && bool_and ] :
+[ [ zap #true ] [ [ #true ] [ #false ] if ] if ] [ || bool_ior ] :
+[ [ [ #false ] [ #true ] if ] [ [ #true ] [ #false ] if ] if ] [ ^^ bool_xor ] :
