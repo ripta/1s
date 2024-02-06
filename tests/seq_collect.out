@@ -1,0 +1,9 @@
+Result:
+  "collect-into"
+  [ 0 0 0 60 0 ]
+  "collect-into*"
+  [ 0 0 0 60 0 ]
+  "collect"
+  [ 6 7 8 9 10 ]
+  "0,collect"
+  [ 6 7 8 9 10 ]
