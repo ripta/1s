@@ -1,0 +1,7 @@
+"lib/prelude.1s" {LOAD}
+"lib/logic.1s" {LOAD}
+
+[ 1 ] [ from ] :
+[ 1000 ] [ to ] :
+
+0 from [ dup to lt? ] [ dup 3 % 0 eq? over 5 % 0 eq? || [ dup 2bury + swap ] [] if 1 + ] while zap
