@@ -1,0 +1,28 @@
+-- seqlen
+--
+-- `seqlen` calculates the length of any sequence at the top of the stack,
+-- and then buries it under the top of the stack.
+--
+-- Example: [ 1 2 3 ] seqlen == 3 [ 1 2 3 ]
+[ [ len ] [] both ] [ seqlen ] :
+
+[ seqlen [ nth ] cons ] [ iterlen ] :
+[ [ iterlen ] dip cat ] [ operlen ] :
+
+-- Example: 1 5 [ 2 * ] each-int-range
+-- [ 2dup1 lt? [ [ k ] 3keep [ 1 + ] 2dip each-int-range ] [ 3zap ] if ] [ each-int-range ] :
+
+-- blockfill
+-- LENGTH [A*] blockfill == [ An ... A3 A2 A1 ]
+--
+-- `blockfill` fills a new quoted block of size LENGTH with the result of
+-- evaluating [A*]. The block is filled from the top.
+--
+-- Example: 5 [ 0 ] blockfill == [ 0 0 0 0 0 ]
+--          5 [ dup len ] blockfill == [ 4 3 2 1 0 ]
+[ [ i swap cons ] cons swap [] swap 2dig times ] [ blockfill ] :
+
+-- Example: 3 [ 20 * ] [ 0 0 0 0 0 ] collect-into i == [ 0 0 0 60 0 ]
+--
+[ [ [ sip ] dip nth= ] 2cons ] [ collect-into ] :
+[ collect-into 0,upto ] [ collect ] :
