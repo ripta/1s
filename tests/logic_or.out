@@ -1,0 +1,19 @@
+Result:
+  "not"
+  SymbolU32 { value: 10 }
+  SymbolU32 { value: 11 }
+  "and"
+  SymbolU32 { value: 10 }
+  SymbolU32 { value: 10 }
+  SymbolU32 { value: 10 }
+  SymbolU32 { value: 11 }
+  "inclusive_or"
+  SymbolU32 { value: 10 }
+  SymbolU32 { value: 11 }
+  SymbolU32 { value: 11 }
+  SymbolU32 { value: 11 }
+  "exclusive_or"
+  SymbolU32 { value: 10 }
+  SymbolU32 { value: 11 }
+  SymbolU32 { value: 11 }
+  SymbolU32 { value: 10 }

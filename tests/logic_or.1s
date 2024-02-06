@@ -1,0 +1,23 @@
+"lib/logic.1s" {LOAD}
+
+"not"
+#true !
+#false !
+
+"and"
+#false #false &&
+#false #true &&
+#true #false &&
+#true #true &&
+
+"inclusive_or"
+#false #false ||
+#false #true ||
+#true #false ||
+#true #true ||
+
+"exclusive_or"
+#false #false ^^
+#false #true ^^
+#true #false ^^
+#true #true ^^
