@@ -1,3 +1,4 @@
+use crate::lexer::Location;
 use crate::parser::{ParseKind, ParseNode};
 use crate::sym::SymbolManager;
 use crate::{lexer, parser, sym};
@@ -801,7 +802,7 @@ fn builtin_nth_set(mut state: State) -> Result<State> {
     node.insert(index, element);
     state.stack.push(ParseNode {
         kind: ParseKind::Block(node),
-        location: state.location.clone(),
+        location: Location::Evaluation(state.counter),
     });
 
     return Ok(state);
