@@ -22,13 +22,31 @@
 --          5 [ dup len ] blockfill == [ 4 3 2 1 0 ]
 [ [ i swap cons ] cons swap [] swap 2dig times ] [ blockfill ] :
 
--- Example: 3 [ 20 * ] [ 0 0 0 0 0 ] collect-into i == [ 0 0 0 60 0 ]
---          3 [ 20 * ] [ 0 0 0 0 0 ] 2collect-into i == [ 0 0 0 60 0 ]
-[ [ [ sip ] dip nth= ] 2cons ] [ collect-into ] :
-[ 2bury [ 2dig [ sip ] dip nth= ] cons ] [ 2collect-into ] :
-[ 3bury [ 2dig [ sip ] dip nth= ] cons ] [ 3collect-into ] :
+-- Sequence modification operator
+-- INDEX [TRANSFORM] [SEQ] collect-into == [[SEQ']]
+-- [SEQ] INDEX [TRANSFORM] collect-into* == [[SEQ']]
+--
+-- `collect-into` evaluates TRANSFORM using the INDEX and inserts it at INDEX
+-- in SEQ, producing the new sequence SEQ'. The result of `collect-into` is
+-- quoted, and must thus be applied (`i`) in order to produce a value.
+--
+-- `collect-into*` is a convenience function with the arguments rotated.
+--
+-- Example: 3 [ 20 * ] [ 0 0 0 0 0 ] collect-into i  == [ 0 0 0 60 0 ]
+--          [ 0 0 0 0 0 ] 3 [ 20 * ] collect-into* i == [ 0 0 0 60 0 ]
+[ [ 2dig [ sip ] dip nth= ] cons ] [ collect-into* ] :
+[ 2bury collect-into* ] [ collect-into ] :
 
--- Example:
---          0 5 [ 6 + ] [ 0 0 0 0 0 ] collect == [ 6 7 8 9 10 ]
-[ 2collect-into 0,upto ] [ 0,collect ] :
-[ 3collect-into upto ] [ collect ] :
+-- Repeated sequence modification
+-- LOWERBOUND UPPERBOUND [TRANSFORM] [SEQ] collect == [SEQ']
+-- UPPERBOUND [TRANSFORM] [SEQ] 0,collect == [SEQ']
+--
+-- `collect` repeatedly applies TRANSFORM to SEQ with consecutive indices
+-- from LOWERBOUND to UPPERBOUND, producing new sequence SEQ'.
+--
+-- `0,collect` is a convenience word, where LOWERBOUND is 0.
+--
+-- Example: 0 5 [ 6 + ] [ 0 0 0 0 0 ] collect == [ 6 7 8 9 10 ]
+--          5 [ 6 + ] [ 0 0 0 0 0 ] 0,collect == [ 6 7 8 9 10 ]
+[ 3bury collect-into* upto ] [ collect ] :
+[ 2bury collect-into* 0,upto ] [ 0,collect ] :
