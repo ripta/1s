@@ -11,7 +11,7 @@ lint:
 	cargo clippy -- -A clippy::needless_return
 
 repl:
-	cargo run --bin 1s -- -i lib/prelude.1s lib/repl.1s lib/math.1s lib/seq.1s
+	cargo run --bin 1s -- -i lib/prelude.1s lib/repl.1s lib/math.1s lib/seq.1s lib/logic.1s
 
 test:
 	cargo test
