@@ -16,3 +16,6 @@ repl:
 test:
 	cargo test
 	./scripts/gauntlet.sh
+
+update-golden:
+	./scripts/gauntlet.sh -u
