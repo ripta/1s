@@ -105,7 +105,7 @@ fn run(flags: Flags) -> Result<u8> {
         let mut reader = DefaultEditor::new()?;
         println!("Entering interactive session; ^D to exit");
         loop {
-            match reader.readline("1s> ") {
+            match reader.readline(&format!("1s:{:?}> ", state.counter)) {
                 Ok(line) => {
                     if line.is_empty() {
                         continue;
