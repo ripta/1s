@@ -17,3 +17,25 @@
 --
 -- Example: 10 fib:rec == 55
 [ dup 2 lt? [ [ 1 - fib:rec ] [ 2 - fib:rec ] both + ] unwhen ] [ fib:rec ] :
+
+-- `int->bits` and `bits->int` converts a little-endian bit-array to integers, and back.
+--
+-- Example: 99 int->bits == [ 1 1 0 0 0 1 1 ]
+--          [ 1 1 0 0 0 1 1 ] bits->int == 99
+[ [] [ over 1 gt? ] [ over 2 % swons swap 2 / swap ] while cons ] [ int->bits ] :
+[ 0 [ over len 0 gt? ] [ swap uncons 2bury swap 2 * + ] while swap zap ] [ bits->int ] :
+
+-- `bit->bitstring` and `bitstring->bit` converts a bit (integer 0 or 1) into a bitstring
+-- ("0" or "1"), and back. Integers outside the 0 or 1 domain are treated as 1; same with
+-- bitstring outside "0" and "1" are treated as 1.
+--
+-- Example: 0 bit->bitstring == "0"
+--          "1" bitstring->bit == 1
+[ 0 eq? [ "0" ] [ "1" ] if ] [ bit->bitstring ] :
+[ "0" eq? [ 0 ] [ 1 ] if ] [ bitstring->bit ] :
+
+-- `int->bitstring` converts an int to a bitstring. There is no reverse word until we
+-- support substrings or indexing into a string.
+--
+-- Example: 99 int->bitstring == "1100011"
+[ "" [ over 1 gt? ] [ over 2 % bit->bitstring + swap 2 / swap ] while swap bit->bitstring + ] [ int->bitstring ] :
