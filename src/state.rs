@@ -228,11 +228,11 @@ fn builtin_car(mut state: State) -> Result<State> {
     // `car` of an empty block is itself an empty block, so ignore removal of an already empty block
     if !a.is_empty() {
         a.remove(0);
+        state.stack.push(ParseNode {
+            kind: ParseKind::Block(a),
+            location: state.clone().location,
+        });
     }
-    state.stack.push(ParseNode {
-        kind: ParseKind::Block(a),
-        location: state.clone().location,
-    });
 
     return Ok(state);
 }
@@ -242,13 +242,8 @@ fn builtin_cdr(mut state: State) -> Result<State> {
     let mut a = get_block(checked_pop!(state))?;
 
     // `cdr` of an empty block is itself an empty block, so ignore removal of an already empty block
-    if a.len() > 1 {
+    if a.len() > 0 {
         state.stack.push(a.remove(0));
-    } else {
-        state.stack.push(ParseNode {
-            kind: ParseKind::Block(vec![]),
-            location: state.clone().location,
-        });
     }
 
     return Ok(state);
