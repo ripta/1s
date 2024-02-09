@@ -1,0 +1,12 @@
+"lib/math.1s" {LOAD}
+
+55 int->bits
+[ 1 1 0 1 1 1 ] bits->int
+
+55 int->bitstring
+
+0 bit->bitstring
+1 bit->bitstring
+2 bit->bitstring
+
+[ 1 1 0 0 0 1 0 ] bits->int

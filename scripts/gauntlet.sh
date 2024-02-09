@@ -22,7 +22,9 @@ while getopts "u" arg; do
   esac
 done
 
-if ! res=$(do:build); then
+if res=$(do:build); then
+  echo "BUILD"
+else
   echo "$res"
   echo "ERROR do:build"
   exit 1
