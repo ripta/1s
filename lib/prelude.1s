@@ -221,16 +221,26 @@
 [ dup 2bury i 2bury i swap ] [ 2fork ] :
 
 -- (25) Both
--- C [B*] [A*] both == AC BC
+-- C [B*] [A*] both == [C B*]i [C A*]i
+-- D C [B*] [A*] 2both == [D C B*]i [D C A*]i
 --
 -- `both` applies the argument C to both quotations A and B consecutively,
 -- leaving the results on the stack. In general, equivalent to:
 --
 -- C [B*] sip A*
 --
+-- `2both` is the two-argument version of `both` that applies the arguments
+-- D and C to both quotations A and B consecutively, leaving the results on
+-- the stack. In general, equivalent to:
+--
+-- D C [B*] 2keep A*
+--
 -- Example: 5 [ 3 + ] [ 3 * ] both == 8 15
 --          5 [ 3 + ] keep 3 *     == 8 15
+--
+-- Example: 5 9 [ + ] [ * ] 2both == 14 45
 [ [ keep ] dip i ] [ both ] :
+[ [ 2keep ] dip i ] [ 2both ] :
 
 -- (26) Advanced dipping
 [ swap [ dip ] dip ] [ 2dip ] :
@@ -254,6 +264,11 @@
 --          [ [ [ 3 ] 2 ] 1 ] car    == [ 1 ]
 --          [ [ [ 3 ] 2 ] 1 ] cdr    == [ [ 3 ] 2 ]
 --          [ [ [ 3 ] 2 ] 1 ] uncons == [ [ 3 ] 2 ] [ 1 ]
+--
+-- Example: 2 [ 1 ] cons == [ 2 1 ]
+--          [ 2 1 ] uncons == 2 [ 1 ]
+--          [ 2 1 ] car == [ 1 ]
+--          [ 2 1 ] cdr == 2
 [ {CAR} ] [ car ] :
 [ {CDR} ] [ cdr ] :
 [ [ cdr ] [ car ] both ] [ uncons ] :
