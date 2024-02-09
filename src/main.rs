@@ -166,7 +166,7 @@ fn run(flags: Flags) -> Result<u8> {
         for item in state.stack {
             println!("  {}", item);
         }
-        println!("Statistics: {:?}", state.counter);
+        // println!("Statistics: {:?}", state.counter);
     }
 
     return Ok(0);
