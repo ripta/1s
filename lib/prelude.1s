@@ -394,15 +394,15 @@
 [ {SYM:attr?} ] [ attr? ] :
 [ {SYM:prop} ] [ prop ] :
 
--- IDX [BLOCK*] nth
--- NEW IDX [BLOCK*] nth=
--- IDX [BLOCK*] [TRANSFORM*] nth!
+-- IDX [SEQ] nth
+-- NEW IDX [SEQ] nth=
+-- IDX [SEQ] [TRANSFORM*] nth!
 --
 -- `nth` and `nth=` are native implementations that retrieve and set,
--- respectively, the value at index IDX in the block BLOCK.
+-- respectively, the value at index IDX in SEQ.
 --
 -- `nth!` is a convenience word that evaluates TRANSFORM* with the value
--- of index IDX in BLOCK.
+-- of index IDX in SEQ.
 --
 -- Example: 3 0 [ 1 1 1 1 1 ] nth= == [ 3 1 1 1 1 ]
 --          0 [ 3 1 1 1 1 ] nth == 3
