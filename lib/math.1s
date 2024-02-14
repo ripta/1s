@@ -39,3 +39,27 @@
 --
 -- Example: 99 int->bitstring == "1100011"
 [ "" [ over 1 gt? ] [ over 2 % bit->bitstring + swap 2 / swap ] while swap bit->bitstring + ] [ int->bitstring ] :
+
+-- `abs` calculates the absolute value of the top of the stack.
+--
+-- Example: -9 abs == 9
+--          9 abs == 9
+[ dup 0 gt? [] [ 0 swap - ] if ] [ abs ] :
+
+-- `if0` checks whether the number is zero. When zero, then the zero is
+-- dropped, and [B*] is evaluated. Otherwise, [A*] is evaluated.
+--
+-- Example: 3 [ 4 ] [ 2 * ] if0 == 6
+--          0 [ 4 ] [ 2 * ] if0 == 4
+[ [ dup 0 eq? ] [ [ zap ] prepose ] [] troth if ] [ if0 ] :
+
+-- `gcd` calculates the greatest common divisor of the two top of the stack.
+-- `lcm` calculates the least common multiple of the two top of the stack.
+--
+-- Example: 26 12 gcd == 2
+--          8 17 lcm == 136
+[ [ abs ] [ [ nip ] [ % ] 2both gcd ] if0 ] [ gcd ] :
+[ [ * dup 0 eq? ] 2keep [ gcd / ] 2cons unwhen ] [ lcm ] :
+
+-- Example: 17 11 divmod == 1 6
+[ 2dup / 2bury % ] [ divmod ] :
