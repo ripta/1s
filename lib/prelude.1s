@@ -350,9 +350,18 @@
 [ swap [ run ] times ] [ run/n ] :
 
 -- Looping
+-- START [BODY-WITH-CHECK] loop
+-- START [CHECK] [BODY] while
+-- START [CHECK] [BODY] until
+--
+-- `loop` evaluates BODY-WITH-CHECK until it evaluates to #false.
+--
+-- `while` evaluates BODY while CHECK evaluates to #true. `until` evaluates
+-- BODY while CHECK evaluates to #false, and is the inverse of `while`.
 --
 -- Example: 1 [ dup 2 * dup 16 lt? ] loop      == 1 2 4 8 16
 --          1 [ dup 16 lt? ] [ dup 2 * ] while == 1 2 4 8 16
+--          1 [ dup 16 gte? ] [ dup 2 * ] until == 1 2 4 8 16
 [ [ i ] sip [ loop ] cons when ] [ loop ] :
 [ swap cat [ loop ] cons i ] [ while ] :
 -- [ [ [ dup ] cat ] dip while zap ] [ while* ] :
