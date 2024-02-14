@@ -1118,6 +1118,25 @@ fn builtin_time(mut state: State) -> Result<State> {
     return Ok(state);
 }
 
+fn builtin_typeof(mut state: State) -> Result<State> {
+    let key = checked_pop!(state);
+
+    let t = match key.kind {
+        ParseKind::Block(_) => state.symbols.get("block"),
+        ParseKind::FloatValue(_) => state.symbols.get("float"),
+        ParseKind::IntegerValue(_) => state.symbols.get("integer"),
+        ParseKind::StringValue(_) => state.symbols.get("string"),
+        ParseKind::Symbol(_) => state.symbols.get("symbol"),
+        ParseKind::WordRef(_) => state.symbols.get("word"),
+    };
+    state.stack.push(ParseNode {
+        kind: ParseKind::Symbol(t),
+        location: state.location.clone(),
+    });
+
+    return Ok(state);
+}
+
 #[derive(Debug, Clone)]
 pub enum Code {
     Native(String, fn(State) -> Result<State>),
@@ -1193,6 +1212,10 @@ impl State {
         defs.insert(
             "{RELTIME}".to_string(),
             Code::Native("{RELTIME}".to_string(), builtin_time),
+        );
+        defs.insert(
+            "{TYPEOF}".to_string(),
+            Code::Native("{TYPEOF}".to_string(), builtin_typeof),
         );
 
         defs.insert(

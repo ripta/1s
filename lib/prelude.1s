@@ -401,6 +401,8 @@
 [ {SYM:attr-} ] [ attr- ] :
 [ {SYM:attrs} ] [ attrs ] :
 [ {SYM:prop} ] [ prop ] :
+[ [ #block #float #integer #string #symbol #word ] ] [ types ] :
+[ {TYPEOF} ] [ typeof ] :
 
 -- Hashing of any value
 [ {HASH} ] [ hash ] :
