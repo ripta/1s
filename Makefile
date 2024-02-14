@@ -13,6 +13,9 @@ lint:
 repl:
 	cargo run --bin 1s -- -l -i prelude repl math seq logic shuffle
 
+repl-opt:
+	cargo run --release --bin 1s -- -l -i prelude repl math seq logic shuffle
+
 test:
 	cargo test
 	./scripts/gauntlet.sh
