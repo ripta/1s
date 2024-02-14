@@ -1,6 +1,7 @@
 use crate::{lexer, sym};
 use std::fmt;
 use std::fmt::{Display, Formatter};
+use std::hash::{Hash, Hasher};
 use std::slice::Iter;
 use string_interner::DefaultSymbol;
 
@@ -9,7 +10,7 @@ pub struct ParseTree {
     pub top_level: Vec<ParseNode>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Hash)]
 pub struct ParseNode {
     pub kind: ParseKind,
     pub location: lexer::Location,
@@ -55,6 +56,19 @@ pub enum ParseKind {
     StringValue(String),
     Symbol(DefaultSymbol),
     WordRef(String),
+}
+
+impl Hash for ParseKind {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        match &self {
+            ParseKind::Block(ps) => ps.hash(state),
+            ParseKind::FloatValue(f) => f.to_bits().hash(state),
+            ParseKind::IntegerValue(i) => i.hash(state),
+            ParseKind::StringValue(s) => s.hash(state),
+            ParseKind::Symbol(s) => s.hash(state),
+            ParseKind::WordRef(w) => w.hash(state),
+        }
+    }
 }
 
 impl Display for ParseKind {

@@ -6,6 +6,7 @@ use rand::{Rng, SeedableRng};
 use rand_chacha::ChaCha20Rng;
 use snafu::{ResultExt, Snafu};
 use std::collections::{HashMap, HashSet};
+use std::hash::{DefaultHasher, Hash, Hasher};
 use std::ops::Index;
 use std::path::{Path, PathBuf};
 use std::result;
@@ -530,6 +531,20 @@ fn builtin_gte(mut state: State) -> Result<State> {
             value: node.clone(),
         }),
     };
+}
+
+fn builtin_hash(mut state: State) -> Result<State> {
+    let obj = checked_pop!(state);
+
+    let mut h = DefaultHasher::new();
+    obj.hash(&mut h);
+
+    state.stack.push(ParseNode {
+        kind: ParseKind::IntegerValue(h.finish() as i64),
+        location: state.location.clone(),
+    });
+
+    return Ok(state);
 }
 
 fn builtin_if(mut state: State) -> Result<State> {
@@ -1162,6 +1177,7 @@ impl State {
         defs.insert("√2".to_string(), Code::Native("√2".to_string(), builtin_const_sqrt2));
         defs.insert("π".to_string(), Code::Native("π".to_string(), builtin_const_pi));
 
+        defs.insert("{HASH}".to_string(), Code::Native("{HASH}".to_string(), builtin_hash));
         defs.insert("{LEN}".to_string(), Code::Native("{LEN}".to_string(), builtin_len));
         defs.insert("{LOAD}".to_string(), Code::Native("{LOAD}".to_string(), builtin_load));
         defs.insert("{NTH}".to_string(), Code::Native("{NTH}".to_string(), builtin_nth_get));

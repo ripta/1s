@@ -402,6 +402,9 @@
 [ {SYM:attrs} ] [ attrs ] :
 [ {SYM:prop} ] [ prop ] :
 
+-- Hashing of any value
+[ {HASH} ] [ hash ] :
+
 -- IDX [SEQ] nth
 -- NEW IDX [SEQ] nth=
 -- IDX [SEQ] [TRANSFORM*] nth!

@@ -3,6 +3,7 @@ use crate::state::EvaluationError;
 use snafu::{ResultExt, Snafu};
 use std::fmt;
 use std::fmt::{Display, Formatter};
+use std::hash::Hash;
 
 #[derive(Debug, Snafu)]
 pub enum LexerError {
@@ -33,7 +34,7 @@ pub enum TokenKind {
     Word(String),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Hash)]
 pub enum Location {
     Static(&'static str),
     Evaluation((usize, usize)),
