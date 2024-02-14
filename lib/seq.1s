@@ -109,7 +109,7 @@
 --          0 10 [ 22 gt? ] find-in-range == #false
 [
     2over lt?
-        [ [ zap1 i ] 3keep 3dig [ 2zap swap zap ] [ [ 1 + ] 2dip find-in-range ] if ]
+        [ [ zap1 i ] 3keep 3dig [ 2zap ] [ [ 1 + ] 2dip find-in-range ] if ]
         [ 3zap #false ]
     if
 ] [ find-in-range find-integer-from ] :
