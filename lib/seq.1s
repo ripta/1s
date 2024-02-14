@@ -268,3 +268,15 @@
 --          -3 [ 1 2 3 4 5 6 7 8 ] >rot> == [ 4 5 6 7 8 1 2 3 ]
 [ dup len swap [ % ] dip over 0 gte? [ /split ] [ [ abs ] dip split/ ] if swat ] [ <rot< ] :
 [ [ 0 swap - ] dip <rot< ] [ >rot> ] :
+
+-- LEN [SEQ] runs-of-len == [[SEQ']]
+--
+-- `runs-of-len` constructs SEQ', which is a sequence of subsequences of length
+-- LEN of elements in SEQ from the front to back. There are the same number of
+-- subsequences in SEQ' as there are elements in the original SEQ.
+--
+-- The original SEQ is treated as a ring, such that elements are taken from the
+-- front of SEQ as the sequencer runs out of element.
+--
+-- Example: 3 [ 10 20 30 40 50 ] runs-of-len == [ [ 10 20 30 ] [ 20 30 40 ] [ 30 40 50 ] [ 40 50 10 ] [ 50 10 20 ] ]
+[ dup len [ 2dup1 [ swap ] dip <rot< head ] accumulate-upto 2bury 2zap ] [ runs-of-len ] :
