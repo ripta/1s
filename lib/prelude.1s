@@ -369,9 +369,22 @@
 [ {SYM:attr?} ] [ attr? ] :
 [ {SYM:prop} ] [ prop ] :
 
--- Example: 3 0 [ 1 1 1 1 1 ] nth=
+-- IDX [BLOCK*] nth
+-- NEW IDX [BLOCK*] nth=
+-- IDX [BLOCK*] [TRANSFORM*] nth!
+--
+-- `nth` and `nth=` are native implementations that retrieve and set,
+-- respectively, the value at index IDX in the block BLOCK.
+--
+-- `nth!` is a convenience word that evaluates TRANSFORM* with the value
+-- of index IDX in BLOCK.
+--
+-- Example: 3 0 [ 1 1 1 1 1 ] nth= == [ 3 1 1 1 1 ]
+--          0 [ 3 1 1 1 1 ] nth == 3
+--          2 [ 4 5 6 ] [ 7 * ] nth! == [ 4 5 42 ]
 [ {NTH} ] [ nth ] :
 [ {NTH=} ] [ nth= ] :
+[ [ [ nth ] dip i ] 3keep zap nth= ] [ nth! ] :
 
 --
 -- (END) Ensure stack is empty after evaluation this file to verify that none
