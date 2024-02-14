@@ -1,4 +1,4 @@
-"lib/math.1s" {LOAD}
+"math" {LOAD}
 
 55 int->bits
 [ 1 1 0 1 1 1 ] bits->int

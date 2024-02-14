@@ -1,5 +1,5 @@
-"lib/prelude.1s" {LOAD}
-"lib/logic.1s" {LOAD}
+"prelude" {LOAD}
+"logic" {LOAD}
 
 [ 1 ] [ from ] :
 [ 1000 ] [ to ] :

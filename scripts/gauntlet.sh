@@ -34,12 +34,12 @@ for file in tests/*.1s; do
   out="${file/.1s/.out}"
   if [[ -n "$update" ]]; then
     echo "UPDATE $out"
-    ./target/debug/1s -q lib/prelude.1s $file > $out
+    ./target/debug/1s -q prelude $file > $out
   elif [[ ! -f "$out" ]]; then
     echo "EMPTY $out"
     touch $out
   fi
-  if diff -u $out <(./target/debug/1s -q lib/prelude.1s $file); then
+  if diff -u $out <(./target/debug/1s -q prelude $file); then
     echo "OK $file"
   else
     echo "ERROR $file"

@@ -1,4 +1,4 @@
-"lib/logic.1s" {LOAD}
+"logic" {LOAD}
 
 "not"
 #true !

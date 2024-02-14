@@ -1,4 +1,4 @@
-"lib/seq.1s" {LOAD}
+"seq" {LOAD}
 
 "collect-into"
 3 [ 20 * ] [ 0 0 0 0 0 ] collect-into i
