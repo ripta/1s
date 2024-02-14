@@ -6,6 +6,12 @@
 -- Example: [ 1 2 3 ] seqlen == 3 [ 1 2 3 ]
 [ [ len ] [] both ] [ seqlen ] :
 
+-- Length iterator and operator
+-- [SEQ] [TRANSFORM] lenoper
+--
+-- `lenoper` creates a transformation operator and places the length under it.
+--
+-- Example: [ 10 20 30 ] [ 2 + ] lenoper == 3 [ [ 10 20 30 ] nth 2 + ]
 [ seqlen [ nth ] cons ] [ leniter ] :
 [ [ leniter ] dip cat ] [ lenoper ] :
 
@@ -26,7 +32,7 @@
 --          5 [ dup len ] blockfill == [ 4 3 2 1 0 ]
 [ swap [ swons ] cat swap 2bury times ] [ repcat-into ] :
 [ [] repcat-into ] [ repcat blockfill ] :
-[ [ 0 ] blockfill ] [ 0fill ] :
+[ [ 0 ] blockfill ] [ zerofill ] :
 
 -- Sequence modification operator
 -- INDEX [TRANSFORM] [SEQ] collect-into == [[SEQ']]
@@ -77,3 +83,51 @@
 --
 -- Example: 5 [ + ] repquot == [ + + + + + ]
 [ [] 0,accumulate ] [ repquot ] :
+
+-- LEN [TRANSFORM] accumulate-upto
+--
+-- `accumulate-upto` repeatedly accumulates from 0 upto LEN, evaluating
+-- TRANSFORM for each.
+--
+-- Example: 5 [] accumulate-upto == [ 0 1 2 3 4 ]
+--          5 [ dup * ] accumulate-upto == [ 0 1 4 9 16 ]
+--          5 [] accumulate-downfrom == [ 4 3 2 1 0 ]
+[ over zerofill 0,collect ] [ accumulate-upto ] :
+[ over 1 - unit [ swap - ] cat swat accumulate-upto ] [ accumulate-downfrom ] :
+
+-- [START END) [QUOTE*] find-in-range == INDEX-OR-#false
+--
+-- `find-in-range` finds the first index between START (inclusive) to
+-- END (exclusive) for which QUOTE* evaluates to #true. If QUOTE* never
+-- evaluates to #true and we reach END, then the word itself evaluates to
+-- #false.
+--
+-- Example: 0 10 [ 5 gt? ] find-in-range == 6
+--          0 10 [ 22 gt? ] find-in-range == #false
+[
+    2over lt?
+        [ [ zap1 i ] 3keep 3dig [ 2zap swap zap ] [ [ 1 + ] 2dip find-in-range ] if ]
+        [ 3zap #false ]
+    if
+] [ find-in-range find-integer-from ] :
+
+[ [ lenoper find-in-range ] 2keep zap ] [ find-in ] :
+
+-- INDEX [SEQ] bounds? == BOOL
+--
+-- `bounds?` determines whether the INDEX is in bounds of the length of SEQ.
+--
+-- Example: 10 [ 10 20 30 40 50 ] bounds? == #false
+--          2  [ 10 20 30 40 50 ] bounds? == #true
+--          -1 [ 10 20 30 40 50 ] bounds? == #false
+[ over 0 gte? [ len lt? ] [ 2zap #false ] if ] [ bounds? ] :
+
+-- INDEX [SEQ] [TRUE-BLOCK] [FALSE-BLOCK] safe-bounds-run
+--
+-- `safe-bounds-run` evaluates TRUE-BLOCK if INDEX is within safe bounds.
+-- Otherwise, FALSE-BLOCK is evaluated.
+--
+-- Example: 9 [ 10 20 30 40 50 ] [ nth ] [ 2zap #false ] safe-bounds-run == #false
+--          1 [ 10 20 30 40 50 ] [ nth ] [ 2zap #false ] safe-bounds-run == 20
+--          -1 [ 10 20 30 40 50 ] [ nth ] [ 2zap #false ] safe-bounds-run == #false
+[ [ 2dup bounds? ] 2dip if ] [ safe-bounds-run ] :
