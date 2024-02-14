@@ -280,8 +280,12 @@
 --          [ 2 1 ] uncons == 2 [ 1 ]
 --          [ 2 1 ] car == [ 1 ]
 --          [ 2 1 ] cdr == 2
-[ {CAR} ] [ car ] :
-[ {CDR} ] [ cdr ] :
+--
+-- Example: [ 1 2 3 4 5 ] seqfirst == 1
+--          [ 1 2 3 4 5 ] seqrest  == [ 2 3 4 5 ]
+--          [ 1 2 3 4 5 ] uncons   == 1 [ 2 3 4 5 ]
+[ {CAR} ] [ car seqrest ] :
+[ {CDR} ] [ cdr seqfirst ] :
 [ [ cdr ] [ car ] both ] [ uncons ] :
 
 -- (29) Swonsing and Unswonsing
