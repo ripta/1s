@@ -98,7 +98,7 @@ fn run(flags: Flags) -> Result<u8> {
                 location: Location::Static("1s::run"),
             },
         ];
-        state = state::run_program(state, loader, flags.trace_exec)?;
+        state = state::run_program(state, loader, false)?;
     }
 
     if flags.interactive {
@@ -127,7 +127,7 @@ fn run(flags: Flags) -> Result<u8> {
                                 println!("Stack:");
                                 for st in &ns.stack {
                                     eprint!("  ");
-                                    state::builtin_show_node(&ns.symbols, st.clone())?;
+                                    state::builtin_show_node(&ns.symbols, &st)?;
                                     println!();
                                 }
                             }

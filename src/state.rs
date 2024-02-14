@@ -33,7 +33,7 @@ pub fn run_state(mut s: State, trace_exec: bool) -> Result<State> {
         println!("  Stack: {:?}", s.stack);
         println!("  Program: {:?}", s.program);
 
-        println!("  Definitions: {:?}", dump_definitions(s.clone().definitions));
+        // println!("  Definitions: {:?}", dump_definitions(s.clone().definitions));
         println!();
     }
 
@@ -43,13 +43,12 @@ pub fn run_state(mut s: State, trace_exec: bool) -> Result<State> {
         if trace_exec {
             println!("Step {:?}", s.counter);
             println!("  Stack: ");
-            for st in &s.stack {
-                print!("    ");
-                builtin_show_node(&s.symbols, st.clone())?;
-            }
-            println!("  Program: {:?}", s.program);
+            builtin_show_nodes(&s.symbols, &s.stack)?;
 
-            println!("  Definitions: {:?}", dump_definitions(s.clone().definitions));
+            println!("  Program:");
+            builtin_show_nodes(&s.symbols, &s.program)?;
+
+            // println!("  Definitions: {:?}", dump_definitions(s.clone().definitions));
             println!();
         }
     }
@@ -200,7 +199,7 @@ fn get_word(s: ParseNode) -> Result<String> {
 macro_rules! checked_pop {
     ( $e:expr ) => {
         $e.stack.pop().ok_or(EvaluationError::ReasonedStackUnderflow {
-            reason: "safe-popping from stack".to_string(),
+            reason: format!("safe-popping from stack at {:?}", $e.location).to_string(),
         })?
     };
 }
@@ -793,7 +792,12 @@ fn builtin_nth_get(mut state: State) -> Result<State> {
 
     if index >= node.len() {
         return Err(EvaluationError::GuardViolation {
-            reason: "index out of bounds".to_string(),
+            reason: format!(
+                "index out of bounds in `nth`: trying to access index {}, but length is {}",
+                index,
+                node.len()
+            )
+            .to_string(),
         });
     }
 
@@ -815,7 +819,12 @@ fn builtin_nth_set(mut state: State) -> Result<State> {
 
     if index >= node.len() {
         return Err(EvaluationError::GuardViolation {
-            reason: "index out of bounds".to_string(),
+            reason: format!(
+                "index out of bounds in `nth=`: trying to set index {}, but length is {}",
+                index,
+                node.len()
+            )
+            .to_string(),
         });
     }
 
@@ -840,13 +849,26 @@ fn builtin_stack_empty(state: State) -> Result<State> {
 
 fn builtin_show(mut state: State) -> Result<State> {
     let node = checked_pop!(state);
-    builtin_show_node(&state.symbols, node)?;
+    builtin_show_node(&state.symbols, &node)?;
     eprintln!();
     return Ok(state);
 }
 
-pub fn builtin_show_node(symbols: &sym::SymbolManager, node: ParseNode) -> Result<()> {
-    match node.kind {
+fn builtin_show_stack(state: State) -> Result<State> {
+    builtin_show_nodes(&state.symbols, &state.stack)?;
+    return Ok(state);
+}
+
+fn builtin_show_nodes(symbols: &SymbolManager, nodes: &Vec<ParseNode>) -> Result<()> {
+    for node in nodes {
+        builtin_show_node(symbols, node)?;
+    }
+    eprintln!();
+    Ok(())
+}
+
+pub fn builtin_show_node(symbols: &SymbolManager, node: &ParseNode) -> Result<()> {
+    match &node.kind {
         ParseKind::FloatValue(f) => {
             eprint!("{} ", f);
             Ok(())
@@ -862,7 +884,7 @@ pub fn builtin_show_node(symbols: &sym::SymbolManager, node: ParseNode) -> Resul
             Ok(())
         }
 
-        ParseKind::Symbol(sym) => match symbols.find(sym) {
+        ParseKind::Symbol(sym) => match symbols.find(*sym) {
             None => Err(EvaluationError::GuardViolation {
                 reason: "!!BUG!! symbol should have existed, but doesn't".to_string(),
             }),
@@ -1070,6 +1092,10 @@ impl State {
             Code::Native("{NTH=}".to_string(), builtin_nth_set),
         );
         defs.insert("{SHOW}".to_string(), Code::Native("{SHOW}".to_string(), builtin_show));
+        defs.insert(
+            "{SHOWSTACK}".to_string(),
+            Code::Native("{SHOWSTACK}".to_string(), builtin_show_stack),
+        );
         defs.insert(
             "{RELTIME}".to_string(),
             Code::Native("{RELTIME}".to_string(), builtin_time),
