@@ -363,7 +363,7 @@
 --          1 [ dup 16 lt? ] [ dup 2 * ] while == 1 2 4 8 16
 --          1 [ dup 16 gte? ] [ dup 2 * ] until == 1 2 4 8 16
 [ [ i ] sip [ loop ] cons when ] [ loop ] :
-[ swap cat [ loop ] cons i ] [ while ] :
+[ swap once cat [ loop ] cons when ] [ while ] :
 -- [ [ [ dup ] cat ] dip while zap ] [ while* ] :
 [ [ bool_not ] dip while ] [ until ] :
 
