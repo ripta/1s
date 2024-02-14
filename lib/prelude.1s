@@ -365,7 +365,7 @@
 [ [ i ] sip [ loop ] cons when ] [ loop ] :
 [ swap once cat [ loop ] cons when ] [ while ] :
 -- [ [ [ dup ] cat ] dip while zap ] [ while* ] :
-[ [ bool_not ] dip while ] [ until ] :
+[ [ [ bool_not ] cat ] dip while ] [ until ] :
 
 -- Random numbers
 [ {RAND:ChaCha20} ] [ rand ] :
