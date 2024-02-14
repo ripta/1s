@@ -198,6 +198,38 @@
 -- Example: 3 [ 1 2 3 4 5 6 7 ] head == [ 1 2 3 ]
 --          3 [ 1 2 3 4 5 6 7 ] tail == [ 5 6 7 ]
 --          2 4 [ 1 2 3 4 5 6 7 8 ] subseq == [ 3 4 ]
+--          2 [ 1 2 3 4 5 6 7 8 ] bothends == [ 1 2 ] [ 7 8 ]
 [ [ nth ] cons over zerofill 0,collect ] [ head ] :
 [ dup len 1 - 2dig - [ dup 0 gte? ] [ [ seqrest ] dip 1 - ] while zap ] [ tail ] :
 [ [ dup ] 2dip 2dig [ dup len ] dip - swap tail [ swap - ] dip head ] [ subseq ] :
+[ [ head ] [ tail ] 2both ] [ bothends ] :
+
+-- Example: 3 [ 1 2 3 4 5 6 7 ] drophead == [ 4 5 6 7 ]
+--          3 [ 1 2 3 4 5 6 7 ] droptail == [ 1 2 3 4 ]
+[ swap [ dup len ] dip - swap head ] [ droptail ] :
+[ swap [ dup len ] dip - swap tail ] [ drophead ] :
+[ [ droptail ]  [ drophead ] 2both ] [ dropends ] :
+
+-- NUM [SEQ] /split == [PRESEQ] [POSTSEQ]
+-- NUM [SEQ] split/ == [PRESEQ] [POSTSEQ]
+--
+-- `/split` and `split/` splits SEQ into two PRESEQ and POSTSEQ. The splitting
+-- happens after NUM elements from beginning (for `/split`) or end (`split/`),
+-- with the position of `/` being the mnemonic of side of sequence where the
+-- split happens.
+--
+-- A violation is thrown if NUM is negative.
+--
+-- If NUM is zero, then PRESEQ or POSTSEQ will end up being an empty sequence [].
+--
+-- The resulting PRESEQ and POSTSEQ can be concatenated back using `cat`. That
+-- is, in the general case:
+--
+-- NUM [SEQ] /split cat == NUM [SEQ] split/ cat == [SEQ]
+--
+-- although you still incur runtime overhead of the splitting.
+--
+-- Example: 3 [ 1 2 3 4 5 6 7 8 ] /split == [ 1 2 3 ] [ 4 5 6 7 8 ]
+--          3 [ 1 2 3 4 5 6 7 8 ] split/ == [ 1 2 3 4 5 ] [ 6 7 8 ]
+[ [ head ] [ drophead ] 2both ] [ /split split-from-start ] :
+[ [ droptail ] [ tail ] 2both ] [ split/ split-from-end ] :
