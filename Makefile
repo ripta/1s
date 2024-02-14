@@ -11,7 +11,7 @@ lint:
 	cargo clippy -- -A clippy::needless_return
 
 repl:
-	cargo run --bin 1s -- -i prelude repl math seq logic shuffle
+	cargo run --bin 1s -- -l -i prelude repl math seq logic shuffle
 
 test:
 	cargo test
