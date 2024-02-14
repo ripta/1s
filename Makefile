@@ -11,10 +11,10 @@ lint:
 	cargo clippy -- -A clippy::needless_return
 
 repl:
-	cargo run --bin 1s -- -l -i prelude repl math seq logic shuffle
+	cargo run --bin 1s -- -l -i base repl
 
 repl-opt:
-	cargo run --release --bin 1s -- -l -i prelude repl math seq logic shuffle
+	cargo run --release --bin 1s -- -l -i base repl
 
 test:
 	cargo test

@@ -1,0 +1,5 @@
+"prelude" {LOAD}
+"math" {LOAD}
+"seq" {LOAD}
+"logic" {LOAD}
+"shuffle" {LOAD}
