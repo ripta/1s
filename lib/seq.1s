@@ -26,6 +26,7 @@
 --          5 [ dup len ] blockfill == [ 4 3 2 1 0 ]
 [ swap [ swons ] cat swap 2bury times ] [ repcat-into ] :
 [ [] repcat-into ] [ repcat blockfill ] :
+[ [ 0 ] blockfill ] [ 0fill ] :
 
 -- Sequence modification operator
 -- INDEX [TRANSFORM] [SEQ] collect-into == [[SEQ']]
