@@ -237,6 +237,22 @@ fn builtin_car(mut state: State) -> Result<State> {
     return Ok(state);
 }
 
+fn builtin_cat(mut state: State) -> Result<State> {
+    let a = get_block(checked_pop!(state))?;
+    let b = get_block(checked_pop!(state))?;
+
+    let mut n = Vec::with_capacity(a.len() + b.len());
+    n.extend(b);
+    n.extend(a);
+
+    state.stack.push(ParseNode {
+        kind: ParseKind::Block(n),
+        location: state.clone().location,
+    });
+
+    return Ok(state);
+}
+
 fn builtin_cdr(mut state: State) -> Result<State> {
     // `cdr` of a non-quoted block should error out
     let mut a = get_block(checked_pop!(state))?;
@@ -1009,6 +1025,8 @@ impl State {
         defs.insert("{CONS}".to_string(), Code::Native("{CONS}".to_string(), builtin_cons));
         defs.insert("{K}".to_string(), Code::Native("{K}".to_string(), builtin_k));
         defs.insert("{SIP}".to_string(), Code::Native("{SIP}".to_string(), builtin_sip));
+
+        defs.insert("{CAT}".to_string(), Code::Native("{CAT}".to_string(), builtin_cat));
 
         defs.insert("{CAR}".to_string(), Code::Native("{CAR}".to_string(), builtin_car));
         defs.insert("{CDR}".to_string(), Code::Native("{CDR}".to_string(), builtin_cdr));

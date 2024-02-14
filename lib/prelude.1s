@@ -90,9 +90,9 @@
 -- (10) Catenate
 -- [B*] [A*] cat == [B* A*]
 --
--- `cat` concatenates the two quoted blocks at the top of the stack
--- into one quoted block.
-[ [ [ i ] dip i ] cons cons ] [ cat compose ] :
+-- `cat` is the native implementation that concatenates the two
+-- quoted blocks at the top of the stack into one quoted block.
+[ {CAT} ] [ cat compose ] :
 
 -- (11) Swap
 -- [B*] [A*] swap == [A*] [B*]
