@@ -838,6 +838,48 @@ fn builtin_nth_set(mut state: State) -> Result<State> {
     return Ok(state);
 }
 
+fn builtin_pow(mut state: State) -> Result<State> {
+    let node = checked_pop!(state);
+    return match node.kind {
+        ParseKind::Block(b) => {
+            let vals = b.iter().rev().map(get_integer).collect::<Result<Vec<i64>>>()?;
+            let sum = vals.iter().copied().reduce(|acc, v| acc.pow(v as u32)).ok_or(
+                EvaluationError::ReasonedStackUnderflow {
+                    reason: "no elements to exponentize".to_string(),
+                },
+            )?;
+            state.stack.push(ParseNode {
+                kind: ParseKind::IntegerValue(sum),
+                location: node.location,
+            });
+            Ok(state)
+        }
+
+        ParseKind::FloatValue(a) => {
+            let b = get_float(&checked_pop!(state))?;
+            state.stack.push(ParseNode {
+                kind: ParseKind::FloatValue(b.powf(a)),
+                location: node.location,
+            });
+            Ok(state)
+        }
+
+        ParseKind::IntegerValue(a) => {
+            let b = get_integer(&checked_pop!(state))?;
+            state.stack.push(ParseNode {
+                kind: ParseKind::IntegerValue(b.pow(a as u32)),
+                location: node.location,
+            });
+            Ok(state)
+        }
+
+        _ => Err(EvaluationError::CannotOperate {
+            op: "{**}".to_string(),
+            value: node.clone(),
+        }),
+    };
+}
+
 fn builtin_stack_empty(state: State) -> Result<State> {
     if state.stack.is_empty() {
         return Ok(state);
@@ -1072,6 +1114,7 @@ impl State {
         defs.insert("{%}".to_string(), Code::Native("{%}".to_string(), builtin_mod));
         defs.insert("{*}".to_string(), Code::Native("{*}".to_string(), builtin_mul));
         defs.insert("{-}".to_string(), Code::Native("{-}".to_string(), builtin_sub));
+        defs.insert("{**}".to_string(), Code::Native("{**}".to_string(), builtin_pow));
 
         defs.insert("{>}".to_string(), Code::Native("{>}".to_string(), builtin_gt));
         defs.insert("{>=}".to_string(), Code::Native("{>=}".to_string(), builtin_gte));
