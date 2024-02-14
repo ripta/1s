@@ -74,6 +74,7 @@
 --
 -- `zap` discards the top of the stack without evaluating it.
 [ [ ] k ] [ zap ] :
+[ swap zap ] [ zap1 nip ] :
 [ zap zap ] [ 2zap ] :
 [ swap zap swap zap ] [ 2zap1 ] :
 [ zap zap zap ] [ 3zap ] :
@@ -210,6 +211,7 @@
 [ swap dup 2bury ] [ dup1 over ] :
 [ 2dig dup 2dig1 2dig1 ] [ dup2 ] :
 [ dup2 dup2 ] [ 2dup1 2over ] :
+[ 3dig dup 4bury ] [ 3dup2 ] :
 
 -- (24) Forking
 -- [C*] [B*] [A*] 2fork == AC AB
@@ -241,6 +243,14 @@
 -- Example: 5 9 [ + ] [ * ] 2both == 14 45
 [ [ keep ] dip i ] [ both ] :
 [ [ 2keep ] dip i ] [ 2both ] :
+
+-- F E D [C*] [B*] [A*] == [F C*]i [E B*]i [D A*]i
+--
+-- `troth` is the three-quotation version of `both`. In general, equivalent
+-- to the invocation:
+--
+-- [ [C*] dip B* ] dip A*
+[ [ [ 2dip ] dip dip ] dip i ] [ troth ] :
 
 -- (26) Advanced dipping
 [ swap [ dip ] dip ] [ 2dip ] :
@@ -330,6 +340,7 @@
 [ [ i ] sip [ loop ] cons when ] [ loop ] :
 [ swap cat [ loop ] cons i ] [ while ] :
 -- [ [ [ dup ] cat ] dip while zap ] [ while* ] :
+[ [ bool_not ] dip while ] [ until ] :
 
 -- Random numbers
 [ {RAND:ChaCha20} ] [ rand ] :
