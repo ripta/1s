@@ -1,0 +1,26 @@
+-- Elementary cellular automata with arbitrary 8-bit rule
+-- Adapted from: https://rosettacode.org/wiki/Elementary_cellular_automaton#Factor
+--
+-- NUM run == ø
+-- NUM timed-run == ELAPSED
+--
+-- `run` prints to the screen the evolution of any of the 256 possible elementary
+-- cellular automaton rules over 16 generations. `timed-run` is the timed version,
+-- which pushes the elapsed time in seconds on top of the stack.
+--
+-- The output appears as a character array, because 1s does not yet have string
+-- concatenation.
+--
+-- Example: 90 run (see https://gist.github.com/ripta/6f73b260b061aaa55ebab7c0f8e95df7)
+
+[ 8 swap over int->bits/n rev [ over [ nth ] dip 3 int->bits/n swap unit cons ] cons accumulate-upto ] [ make-rule ] :
+
+[ 15 [ 0 ] repcat dup [ 1 ] join ] [ first-state ] :
+
+[ [ 1 eq? [ "#" ] [ "." ] if ] map show zap ] [ show-state ] :
+
+[ [ dup ] dip 3 swap runs-of-len 1 swap >rot> [ lookup ] with map ] [ next-state ] :
+
+[ make-rule first-state 16 [ dup show-state next-state ] times 2zap ] [ run ] :
+
+[ [ run ] time/bench ] [ timed-run ] :
