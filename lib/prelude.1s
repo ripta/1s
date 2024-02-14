@@ -305,7 +305,6 @@
 
 -- (31) Conditionals
 -- COND [BRANCH-TRUE*] [BRANCH-FALSE*] if
--- [[BRANCH-n*] [CHECK-n*] ... [BRANCH-2*] [CHECK-2*] [BRANCH-1*] [CHECK-1*]] cond
 -- COND [BRANCH*] when
 --
 -- `if` is a native implementation of a primitive branching construct.
@@ -325,6 +324,47 @@
 [ dup2 [ zap i ] [ 2zap1 i ] if ] [ if* ] :
 [ swap [ i ] [ zap ] if ] [ when ] :
 [ swap [ zap ] [ i ] if ] [ unwhen ] :
+
+-- [[[CHECK-1*] [BRANCH-1*]] [[CHECK-2*] [BRANCH-2*]] ... [[#true] [BRANCH-ELSE]]] cond
+--
+-- [[COND-PAIR]-SEQ] cond
+--   where COND-PAIR is [[CHECK] [BRANCH]]
+--   or [[#true] [BRANCH-ELSE]] in the special case
+--
+-- `cond` evaluates each element in COND-PAIR-SEQ, and selects the first
+-- COND-PAIR for which its CHECK evaluates to #true. If no COND-PAIR is
+-- selected, then `cond` leaves #error on the stack.
+--
+-- A COND-PAIR is always a pair of CHECK and BRANCH blocks.
+--
+-- The protocol of a CHECK block is that it must duplicate any values it needs
+-- during evaluation; any mutations of the stack is visible in subsequent
+-- COND-PAIR evaluations. A CHECK block is expected to place on the stack a
+-- literal #true (which will cause its BRANCH to be selected) or #false (which
+-- will cause `cond` to move on to the next COND-PAIR).
+--
+-- The protocol of a BRANCH block is that it is responsible for consuming any
+-- values from the stack.
+--
+-- To avoid #error, you can define a COND-PAIR whose CHECK always evaluates to
+-- literal #true, thus acting as an "else" branch. Its BRANCH-ELSE will
+-- therefore always match if no preceeding CHECK matched.
+--
+-- Care must be taken to ensure that any "else" branch appear last.
+--
+-- Example: [ [
+--              [ [ dup 0 gt? ] [ zap "+" ] ]
+--              [ [ dup 0 lt? ] [ zap "-" ] ]
+--              [ [ #true ]     [ zap "0" ] ]
+--          ] cond ] [ test-num ] :
+--
+--          10 test-num == "+"
+--          -5 test-num == "-"
+--           0 test-num == "0"
+[
+    [ [ 0 ] dip nth i ] 0,find nip dup any?
+    [ [ 1 ] dip nth i ] [ 2zap #error ] if
+] [ cond ] :
 
 -- Iteration
 -- FROM TO [EACH*] upto
