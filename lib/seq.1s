@@ -12,15 +12,20 @@
 -- Example: 1 5 [ 2 * ] each-int-range
 -- [ 2dup1 lt? [ [ k ] 3keep [ 1 + ] 2dip each-int-range ] [ 3zap ] if ] [ each-int-range ] :
 
--- blockfill
--- LENGTH [A*] blockfill == [ An ... A3 A2 A1 ]
+-- N [QUOTE*] repcat
+-- N [QUOTE*] [START*] repcat-into
 --
--- `blockfill` fills a new quoted block of size LENGTH with the result of
--- evaluating [A*]. The block is filled from the top.
+-- `repcat` evaluates the QUOTE* block N times and accumulates the result into a
+-- quoted block at the top of the stack.
 --
--- Example: 5 [ 0 ] blockfill == [ 0 0 0 0 0 ]
+-- `repcat-into` acts as `repcat` with the change that accumulation happens into
+-- the START* block instead of an empty block.
+--
+-- Example: 3 [ 2 ] repcat == [ 2 2 2 ]
+--          3 [ 4 ] [ 5 6 ] repcat-into == [ 4 4 4 5 6 ]
 --          5 [ dup len ] blockfill == [ 4 3 2 1 0 ]
-[ [ i swap cons ] cons swap [] swap 2dig times ] [ blockfill ] :
+[ swap [ swons ] cat swap 2bury times ] [ repcat-into ] :
+[ [] repcat-into ] [ repcat blockfill ] :
 
 -- Sequence modification operator
 -- INDEX [TRANSFORM] [SEQ] collect-into == [[SEQ']]
