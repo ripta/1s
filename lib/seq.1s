@@ -15,6 +15,9 @@
 [ seqlen [ nth ] cons ] [ leniter ] :
 [ [ leniter ] dip cat ] [ lenoper ] :
 
+[ seqlen over 1 - unit [ [ swap - ] cat dip nth ] cons cons ] [ lenreviter ] :
+[ [ lenreviter ] dip cat ] [ lenrevoper ] :
+
 -- Example: 1 5 [ 2 * ] each-int-range
 -- [ 2dup1 lt? [ [ k ] 3keep [ 1 + ] 2dip each-int-range ] [ 3zap ] if ] [ each-int-range ] :
 
@@ -149,11 +152,20 @@
 [ [ 0 ] 2dip find-in i&e ] [ 0,find ] :
 
 -- [SEQ] [TRANSFORM] map == [SEQ']
+-- [SEQ] [TRANSFORM] revmap == [SEQ']
+-- [SEQ] rev == [SEQ']
 --
--- `map` evaluates TRANSFORM for every value in SEQ, producing a new SEQ'.
+-- `map` evaluates TRANSFORM for every value in SEQ in index order, producing
+-- a new SEQ'. `revmap` evaluates in reverse index order.
+--
+-- `rev` is a convenience word to reverse the order of a block.
 --
 -- Example: [ 10 20 30 ] [ 2 + ] map == [ 12 22 32 ]
+--          [ 10 20 30 ] [ 2 + ] revmap == [ 32 22 32 ]
+--          [ 10 20 30 ] rev == [ 30 20 10 ]
 [ lenoper accumulate-upto ] [ map ] :
+[ lenrevoper accumulate-upto ] [ revmap ] :
+[ [] lenrevoper accumulate-upto ] [ rev ] :
 
 -- Padded bit array
 -- INT MIN-BITS int->bits/n
@@ -170,3 +182,22 @@
 --
 -- Example: 2 make-bit-mask == [ [ 0 0 ] [ 0 1 ] [ 1 0 ] [ 1 1 ] ]
 [ 2 swap ** dup [ + int->bits uncons nip ] cons accumulate-upto ] [ make-bit-mask ] :
+
+-- [SEQ1*] [SEQ2*] [SEP*] join == [SEQ1* SEP* SEQ*]
+--
+-- `join` concatenates SEQ1 and SEQ2, inserting SEP between them.
+--
+-- Example: [ 1 2 ] dup [ 3 ] join == [ 1 2 3 1 2 ]
+[ swat cat ] [ join ] :
+
+-- FROM TO [SEQ] subseq == [SEQ']
+-- NUM [SEQ] head == [SEQ']
+--
+-- `head` takes the first NUM elements from SEQ and discards the rest.
+--
+-- Example: 3 [ 1 2 3 4 5 6 7 ] head == [ 1 2 3 ]
+--          3 [ 1 2 3 4 5 6 7 ] tail == [ 5 6 7 ]
+--          2 4 [ 1 2 3 4 5 6 7 8 ] subseq == [ 3 4 ]
+[ [ nth ] cons over zerofill 0,collect ] [ head ] :
+[ dup len 1 - 2dig - [ dup 0 gte? ] [ [ seqrest ] dip 1 - ] while zap ] [ tail ] :
+[ [ dup ] 2dip 2dig [ dup len ] dip - swap tail [ swap - ] dip head ] [ subseq ] :
