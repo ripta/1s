@@ -153,6 +153,7 @@
 [ dup1 dup any? 2dig [ nth ] cons [] if ] [ index&element i&e ] :
 
 -- START [SEQ] [PRED?] find == INDEX ELEMENT
+-- [SEQ] [PRED?] 0,find == INDEX ELEMENT
 --
 -- `find` finds the first index and element, between START and the length of
 -- SEQ, for which PRED? evaluates to #true. If PRED? never evaluates to #true
