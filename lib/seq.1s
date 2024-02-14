@@ -150,7 +150,7 @@
 -- `index&element`
 -- Example: 4 [ 10 20 30 40 50 ] i&e == 4 50
 --          #false [ 10 20 30 40 50 ] i&e == #false #false
-[ dup1 dup any? 2dig [ nth ] cons [] if ] [ index&element i&e ] :
+[ dup1 dup any>bool 2dig [ nth ] cons [] if ] [ index&element i&e ] :
 
 -- START [SEQ] [PRED?] find == INDEX ELEMENT
 -- [SEQ] [PRED?] 0,find == INDEX ELEMENT

@@ -7,4 +7,4 @@
 -- Coerce to boolean: check whether top of stack is not #false.
 --
 -- Example:
-[ #false eq? ! ] [ !! any? ] :
+[ #false eq? ! ] [ !! any>bool ] :

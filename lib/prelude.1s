@@ -362,7 +362,7 @@
 --          -5 test-num == "-"
 --           0 test-num == "0"
 [
-    [ [ 0 ] dip nth i ] 0,find nip dup any?
+    [ [ 0 ] dip nth i ] 0,find nip dup any>bool
     [ [ 1 ] dip nth i ] [ 2zap #error ] if
 ] [ cond ] :
 
