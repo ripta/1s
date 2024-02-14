@@ -1,0 +1,20 @@
+-- Higher-order generalizations of shuffle operations
+
+-- Generalized duplication
+-- NUM gendup/n
+-- NUM dup/n
+--
+-- `gendup/n` generates a quoted block that when evaluated causes an effect
+-- of generalized duplication. `dup/n` generates the quoted block and immediately
+-- evaluates said block.
+--
+-- In general:
+--   0 gendup/n == zap
+--   1 gendup/n == ø
+--   2 gendup/n == dup
+--   3 gendup/n == dup dup
+--
+-- Example: 22 3 gendup/n == 22 [ dup dup ]
+--          22 3 dup/n == 22 22 22
+[ [ [ zap ] ] [ 1 - [ dup ] repquot ] if0 ] [ gendup/n ] :
+[ gendup/n i ] [ dup/n ] :
