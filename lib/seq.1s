@@ -114,6 +114,18 @@
     if
 ] [ find-in-range find-integer-from ] :
 
+-- START [SEQ] [PRED?] find-in == INDEX [SEQ]
+--
+-- `find-in` searches for the INDEX in SEQ, starting at index START, whose
+-- element causes PRED? to evaluate to #true. INDEX is #false if no element is
+-- accepted by PRED?.
+--
+-- A copy of SEQ is also returned onto the top of the stack.
+--
+-- Example: 0 [ 11 12 13 14 15 16 17 ] [ 12 gt? ] find-in == 2 [ 11 12 13 14 15 16 17 ]
+--          2 [ 11 12 13 14 15 16 17 ] [ 12 gt? ] find-in == 2 [ 11 12 13 14 15 16 17 ]
+--          4 [ 11 12 13 14 15 16 17 ] [ 12 gt? ] find-in == 4 [ 11 12 13 14 15 16 17 ]
+--          0 [ 11 12 13 14 15 16 17 ] [ 20 gt? ] find-in == #false [ 11 12 13 14 15 16 17 ]
 [ [ lenoper find-in-range ] 2keep zap ] [ find-in ] :
 
 -- INDEX [SEQ] bounds? == BOOL
