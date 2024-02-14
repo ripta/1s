@@ -283,38 +283,6 @@ fn builtin_ceil(mut state: State) -> Result<State> {
     };
 }
 
-fn builtin_cond(mut state: State) -> Result<State> {
-    let mut cond = get_block(checked_pop!(state))?;
-    let sym_true = state.symbols.get_true();
-
-    let mut s2 = state.clone();
-    loop {
-        let check = get_block(cond.pop().ok_or(EvaluationError::ReasonedStackUnderflow {
-            reason: "looking for a CHECK block in {COND}".to_string(),
-        })?)?;
-        let mut branch = get_block(cond.pop().ok_or(EvaluationError::ReasonedStackUnderflow {
-            reason: "looking for a BRANCH block in {COND}".to_string(),
-        })?)?;
-
-        s2 = State::with(s2, check);
-        s2 = run_state(s2, false)?;
-
-        if get_sym(&checked_pop!(s2))? == sym_true {
-            branch.reverse();
-            state.program.append(&mut branch);
-            break;
-        }
-
-        if cond.is_empty() {
-            return Err(EvaluationError::GuardViolation {
-                reason: "condition never matches".to_string(),
-            });
-        }
-    }
-
-    return Ok(state);
-}
-
 fn builtin_const_pi(mut state: State) -> Result<State> {
     state.stack.push(ParseNode {
         kind: ParseKind::FloatValue(std::f64::consts::PI),
@@ -1070,7 +1038,6 @@ impl State {
             Code::Native("{SYM:prop}".to_string(), builtin_sym_prop),
         );
 
-        defs.insert("{COND}".to_string(), Code::Native("{COND}".to_string(), builtin_cond));
         defs.insert("{IF}".to_string(), Code::Native("{IF}".to_string(), builtin_if));
 
         defs.insert(
