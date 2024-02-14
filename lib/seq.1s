@@ -131,3 +131,26 @@
 --          1 [ 10 20 30 40 50 ] [ nth ] [ 2zap #false ] safe-bounds-run == 20
 --          -1 [ 10 20 30 40 50 ] [ nth ] [ 2zap #false ] safe-bounds-run == #false
 [ [ 2dup bounds? ] 2dip if ] [ safe-bounds-run ] :
+
+-- `index&element`
+-- Example: 4 [ 10 20 30 40 50 ] i&e == 4 50
+--          #false [ 10 20 30 40 50 ] i&e == #false #false
+[ dup1 dup any? 2dig [ nth ] cons [] if ] [ index&element i&e ] :
+
+-- START [SEQ] [PRED?] find == INDEX ELEMENT
+--
+-- `find` finds the first index and element, between START and the length of
+-- SEQ, for which PRED? evaluates to #true. If PRED? never evaluates to #true
+-- and we reach END, then the word itself evaluates to #false.
+--
+-- `0,find` starts the `find` from 0.
+--
+[ find-in i&e ] [ find ] :
+[ [ 0 ] 2dip find-in i&e ] [ 0,find ] :
+
+-- [SEQ] [TRANSFORM] map == [SEQ']
+--
+-- `map` evaluates TRANSFORM for every value in SEQ, producing a new SEQ'.
+--
+-- Example: [ 10 20 30 ] [ 2 + ] map == [ 12 22 32 ]
+[ lenoper accumulate-upto ] [ map ] :
