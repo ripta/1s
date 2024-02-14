@@ -14,14 +14,16 @@
 [ {RELTIME} ] [ time/. ] :
 
 -- time/bench
--- [A*] time/bench == T
+-- [WORK*] time/bench == T
 --
--- `time/bench` evaluates the quoted block at the top of the stack, and pushes
--- the time, elapsed while evaluating, onto the stack. The quoted block must
--- not have any stack effect.
+-- `time/bench` evaluates the quoted block at the top of the stack (WORK),
+-- and pushes the time elapsed onto the stack. Any stack effect from WORK
+-- is placed under the time elapsed.
 --
--- Elapsed time appears in seconds, with fractional components up to nanosecond
--- precision, depending on platform.
+-- Elapsed time appears as relative time between end and start of the evaluation
+-- of WORK in seconds, with fractional components up to nanosecond precision,
+-- depending on platform.
 --
--- Example: [ 20 fib:iter zap ] time/bench == 0.249741561
-[ time/. i time/. swap - ] [ time/bench ] :
+-- Example: [ 20 fib:iter ] time/bench == 6765 0.249741561
+--          [ 50 zerofill zap ] time/bench == 0.554445729
+[ time/. [ i ] dip time/. swap - ] [ time/bench ] :
