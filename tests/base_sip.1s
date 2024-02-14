@@ -1,0 +1,6 @@
+
+[ 5 ] [ 4 ] sip
+
+-- Verify that none of the quoted blocks got evaluated under sipping
+
+[ +?+ ] [ 4 ] sip

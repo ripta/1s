@@ -1,0 +1,8 @@
+
+5 [ 4 ] cons
+5 4 [ 3 ] cons
+5 4 [ 3 ] cons cons
+
+-- Verify that none of the quoted blocks got evaluated under consing
+
+[ +?+ ] [ +?+ ] cons
