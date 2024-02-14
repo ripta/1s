@@ -1,6 +1,25 @@
 -- Prelude from a minimal base {CONS, SIP, K}, plus various arithmetic
 -- operations as described on http://tunes.org/~iepos/joy.html
 
+-- [BODY*] [NAME] {:} == ø
+--
+-- {:} is the native implementation of binding a quoted block to a singleton
+-- block containing name. It is aliased to :. Bindings consume two quoted
+-- blocks from the stack, and has the side-effect that future NAMEs will
+-- be evaluated to the unquoted BODY*.
+[ {:} ] [ : ] {:}
+
+-- MODULE {LOAD} == ø
+--
+-- {LOAD} is the native implementation that causes the reader to search for
+-- MODULE in its search path, and pushes the contents of the MODULE onto
+-- the current program stack for evaluation.
+--
+-- {LOAD} does not yet ensure safety across modules; it does not prevent a
+-- module from leaving values on the stack, nor does it prevent other modules
+-- from consuming any values on the stack that it did not place.
+[ {LOAD} ] [ load ] :
+
 -- Assert
 -- A A {==} == #true
 -- B A {==} == #false
