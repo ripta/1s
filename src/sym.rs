@@ -121,11 +121,11 @@ impl SymbolManager {
     pub fn reset_attribute(&mut self, sym: &DefaultSymbol, attr: &DefaultSymbol) {
         match self.attrs.get_mut(sym) {
             Some(ats) if ats.contains(attr) => {
-                println!("Reset attribute OK");
+                // println!("Reset attribute OK");
                 ats.remove(attr)
             }
             _ => {
-                println!("Reset attribute nothing to do");
+                // println!("Reset attribute nothing to do");
                 false
             }
         };
@@ -134,11 +134,11 @@ impl SymbolManager {
     pub fn set_attribute(&mut self, sym: &DefaultSymbol, attr: &DefaultSymbol) {
         match self.attrs.get_mut(sym) {
             Some(ats) if !ats.contains(attr) => {
-                println!("Set attribute nothing to do");
+                // println!("Set attribute nothing to do");
                 ats.insert(*attr)
             }
             _ => {
-                println!("Set attribute OK");
+                // println!("Set attribute OK");
                 self.attrs.insert(*sym, HashSet::from([*attr]));
                 true
             }
