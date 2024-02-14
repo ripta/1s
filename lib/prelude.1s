@@ -393,6 +393,9 @@
 -- Example: #true #instance_of prop show => #bool
 --          #true #static attr? show => #true
 [ {SYM:attr?} ] [ attr? ] :
+[ {SYM:attr+} ] [ attr+ ] :
+[ {SYM:attr-} ] [ attr- ] :
+[ {SYM:attrs} ] [ attrs ] :
 [ {SYM:prop} ] [ prop ] :
 
 -- IDX [SEQ] nth

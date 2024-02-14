@@ -1,7 +1,7 @@
 use crate::lexer::Location;
 use crate::parser::{ParseKind, ParseNode};
 use crate::sym::SymbolManager;
-use crate::{lexer, parser, sym};
+use crate::{lexer, parser};
 use rand::{Rng, SeedableRng};
 use rand_chacha::ChaCha20Rng;
 use snafu::{ResultExt, Snafu};
@@ -1009,6 +1009,41 @@ fn builtin_sym_attr(mut state: State) -> Result<State> {
     return Ok(state);
 }
 
+fn builtin_sym_attrs(mut state: State) -> Result<State> {
+    let attr = get_sym(&checked_pop!(state))?;
+    let syms = state.symbols.attributes(&attr);
+    // println!("{:?}", syms);
+    let attrs = syms
+        .iter()
+        .map(|sym| ParseNode {
+            kind: ParseKind::Symbol(**sym),
+            location: state.location.clone(),
+        })
+        .collect();
+    state.stack.push(ParseNode {
+        kind: ParseKind::Block(attrs),
+        location: state.location.clone(),
+    });
+
+    return Ok(state);
+}
+
+fn builtin_sym_attr_reset(mut state: State) -> Result<State> {
+    let attr = get_sym(&checked_pop!(state))?;
+    let sym = get_sym(&checked_pop!(state))?;
+
+    state.symbols.reset_attribute(&attr, &sym);
+    return Ok(state);
+}
+
+fn builtin_sym_attr_set(mut state: State) -> Result<State> {
+    let attr = get_sym(&checked_pop!(state))?;
+    let sym = get_sym(&checked_pop!(state))?;
+
+    state.symbols.set_attribute(&attr, &sym);
+    return Ok(state);
+}
+
 fn builtin_sym_prop(mut state: State) -> Result<State> {
     let key = get_sym(&checked_pop!(state))?;
     let sym = get_sym(&checked_pop!(state))?;
@@ -1084,7 +1119,7 @@ pub struct State {
 
     pub stack: Vec<ParseNode>,
     pub program: Vec<ParseNode>,
-    pub symbols: sym::SymbolManager,
+    pub symbols: SymbolManager,
     pub definitions: HashMap<String, Code>,
 }
 
@@ -1147,6 +1182,18 @@ impl State {
         defs.insert(
             "{SYM:attr?}".to_string(),
             Code::Native("{SYM:attr?}".to_string(), builtin_sym_attr),
+        );
+        defs.insert(
+            "{SYM:attr-}".to_string(),
+            Code::Native("{SYM:attr-}".to_string(), builtin_sym_attr_reset),
+        );
+        defs.insert(
+            "{SYM:attr+}".to_string(),
+            Code::Native("{SYM:attr+}".to_string(), builtin_sym_attr_set),
+        );
+        defs.insert(
+            "{SYM:attrs}".to_string(),
+            Code::Native("{SYM:attrs}".to_string(), builtin_sym_attrs),
         );
         defs.insert(
             "{SYM:prop}".to_string(),

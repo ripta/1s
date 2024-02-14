@@ -111,17 +111,34 @@ impl SymbolManager {
         };
     }
 
+    pub fn attributes(&mut self, sym: &DefaultSymbol) -> Vec<&DefaultSymbol> {
+        return match self.attrs.get(sym) {
+            None => vec![],
+            Some(ats) => ats.iter().collect::<Vec<_>>(),
+        };
+    }
+
     pub fn reset_attribute(&mut self, sym: &DefaultSymbol, attr: &DefaultSymbol) {
         match self.attrs.get_mut(sym) {
-            Some(ats) if ats.contains(attr) => ats.remove(attr),
-            _ => false,
+            Some(ats) if ats.contains(attr) => {
+                println!("Reset attribute OK");
+                ats.remove(attr)
+            }
+            _ => {
+                println!("Reset attribute nothing to do");
+                false
+            }
         };
     }
 
     pub fn set_attribute(&mut self, sym: &DefaultSymbol, attr: &DefaultSymbol) {
         match self.attrs.get_mut(sym) {
-            Some(ats) if !ats.contains(attr) => ats.insert(*attr),
+            Some(ats) if !ats.contains(attr) => {
+                println!("Set attribute nothing to do");
+                ats.insert(*attr)
+            }
             _ => {
+                println!("Set attribute OK");
                 self.attrs.insert(*sym, HashSet::from([*attr]));
                 true
             }
