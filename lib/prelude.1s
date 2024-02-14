@@ -1,15 +1,6 @@
 -- Prelude from a minimal base {CONS, SIP, K}, plus various arithmetic
 -- operations as described on http://tunes.org/~iepos/joy.html
 
--- (1) Binding
--- [BODY*] [NAME] {:} == ø
---
--- {:} is the native implementation of binding a quoted block to a singleton
--- block containing name. It is aliased to :. Bindings consume two quoted
--- blocks from the stack, and has the side-effect that future NAMEs will
--- be evaluated to the unquoted BODY*.
-[ {:} ] [ : ] {:}
-
 -- Assert
 -- A A {==} == #true
 -- B A {==} == #false
