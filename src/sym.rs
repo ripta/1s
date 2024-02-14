@@ -96,10 +96,6 @@ impl SymbolManager {
         return self.interner.get_or_intern_static(SYM_FALSE);
     }
 
-    pub fn get_singleton(&mut self) -> DefaultSymbol {
-        return self.interner.get_or_intern_static(SYM_SINGLETON);
-    }
-
     pub fn get_true(&mut self) -> DefaultSymbol {
         return self.interner.get_or_intern_static(SYM_TRUE);
     }
