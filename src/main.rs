@@ -103,6 +103,12 @@ fn run(flags: Flags) -> Result<u8> {
 
     if flags.interactive {
         let mut reader = DefaultEditor::new()?;
+
+        let history_path = "history.txt";
+        if reader.load_history(history_path).is_err() {
+            println!("No previous interactive session history.");
+        }
+
         println!("Entering interactive session; ^D to exit");
         loop {
             match reader.readline(&format!("1s:{:?}> ", state.counter)) {
@@ -111,7 +117,8 @@ fn run(flags: Flags) -> Result<u8> {
                         continue;
                     }
 
-                    // println!("{}", line);
+                    reader.add_history_entry(line.as_str())?;
+
                     match state::run_string(state.clone(), line, flags.trace_exec) {
                         Ok(ns) => {
                             if ns.stack.is_empty() {
@@ -146,11 +153,11 @@ fn run(flags: Flags) -> Result<u8> {
                         }
                     }
                 }
-                Err(rustyline::error::ReadlineError::Interrupted) => {
+                Err(ReadlineError::Interrupted) => {
                     println!("^C detected");
                     break;
                 }
-                Err(rustyline::error::ReadlineError::Eof) => {
+                Err(ReadlineError::Eof) => {
                     println!("^D detected");
                     break;
                 }
@@ -162,6 +169,8 @@ fn run(flags: Flags) -> Result<u8> {
 
             println!();
         }
+
+        reader.save_history(history_path)?;
     } else {
         // println!("RESULT {:?}", state.stack);
         println!("Result:");
