@@ -233,3 +233,23 @@
 --          3 [ 1 2 3 4 5 6 7 8 ] split/ == [ 1 2 3 4 5 ] [ 6 7 8 ]
 [ [ head ] [ drophead ] 2both ] [ /split split-from-start ] :
 [ [ droptail ] [ tail ] 2both ] [ split/ split-from-end ] :
+
+-- NUM [SEQ] <rot< == [SEQ']
+-- NUM [SEQ] >rot> == [SEQ']
+--
+-- `<rot<` and `>rot>` rotates SEQ by NUM steps to the left or to the right
+-- in accordance with the direction of `<` or `>`, producing SEQ'. With each
+-- positive step of rotation left (`<rot<`), the first element is moved from
+-- the start to the end of the sequence. With each step of rotation right
+-- (`>rot>`), the last element is moved from the end to the start.
+--
+-- Runtime depends on the length of SEQ, but is constant with regards to NUM.
+--
+-- If NUM is negative, then the direction of rotation is reversed. That is,
+--
+-- a [SEQ] <rot< == -a [SEQ] >rot>
+--
+-- Example:  3 [ 1 2 3 4 5 6 7 8 ] <rot< == [ 4 5 6 7 8 1 2 3 ]
+--          -3 [ 1 2 3 4 5 6 7 8 ] >rot> == [ 4 5 6 7 8 1 2 3 ]
+[ dup len swap [ % ] dip over 0 gte? [ /split ] [ [ abs ] dip split/ ] if swat ] [ <rot< ] :
+[ [ 0 swap - ] dip <rot< ] [ >rot> ] :
