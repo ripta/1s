@@ -6,8 +6,8 @@
 -- Example: [ 1 2 3 ] seqlen == 3 [ 1 2 3 ]
 [ [ len ] [] both ] [ seqlen ] :
 
-[ seqlen [ nth ] cons ] [ iterlen ] :
-[ [ iterlen ] dip cat ] [ operlen ] :
+[ seqlen [ nth ] cons ] [ leniter ] :
+[ [ leniter ] dip cat ] [ lenoper ] :
 
 -- Example: 1 5 [ 2 * ] each-int-range
 -- [ 2dup1 lt? [ [ k ] 3keep [ 1 + ] 2dip each-int-range ] [ 3zap ] if ] [ each-int-range ] :
