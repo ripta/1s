@@ -400,7 +400,7 @@ fn builtin_assert(mut state: State) -> Result<State> {
     let msg = get_string(&checked_pop!(state))?;
     let val = get_sym(&checked_pop!(state))?;
 
-    if val == state.symbols.get_true() {
+    if state.symbols.as_bool(val) {
         return Ok(state);
     }
 
