@@ -443,6 +443,8 @@
 [ {SYM:prop} ] [ prop ] :
 [ [ #block #float #integer #string #symbol #word ] ] [ types ] :
 [ {TYPEOF} ] [ typeof ] :
+[ typeof #block eq? ] [ block? ] :
+[ typeof #block eq? bool_not ] [ literal? ] :
 
 -- Hashing of any value
 [ {HASH} ] [ hash ] :
