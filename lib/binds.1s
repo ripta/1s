@@ -1,0 +1,2 @@
+
+[ [ swap ] dip [ [ swap ] dip i ] 2cons ] [ with ] :

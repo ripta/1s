@@ -1,5 +1,7 @@
 "prelude" {LOAD}
+"binds" {LOAD}
 "math" {LOAD}
 "seq" {LOAD}
 "logic" {LOAD}
 "shuffle" {LOAD}
+"hashtable_naive" {LOAD}

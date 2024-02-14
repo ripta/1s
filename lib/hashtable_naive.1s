@@ -1,0 +1,7 @@
+
+-- Naive implementation of hashtable, where we cheat by using a native (rust) implementation of a hashing function, but lmao
+
+[ {HASH} ] [ any>key ] :
+
+-- [HT] KEY lookup == VALUE/#false
+[ unit [ 0 swap nth ] swat [ eq? ] cat 0,find swap zap 1 swap nth ] [ lookup ] :
