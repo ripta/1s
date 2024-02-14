@@ -7,7 +7,7 @@ use rand_chacha::ChaCha20Rng;
 use snafu::{ResultExt, Snafu};
 use std::collections::HashMap;
 use std::ops::Index;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::result;
 use std::time::Instant;
 use string_interner::DefaultSymbol;
@@ -96,6 +96,39 @@ impl From<lexer::LexerError> for EvaluationError {
     fn from(value: lexer::LexerError) -> Self {
         return EvaluationError::LexingError { source: value };
     }
+}
+
+pub fn find_file(search_paths: &Vec<String>, mut name: String) -> Result<String> {
+    // Append .1s file extension if it doesn't come with
+    if !name.ends_with(".1s") {
+        name.push_str(".1s");
+    }
+
+    // Treat absolute paths as-is
+    let mut filename = PathBuf::new();
+    filename.push(name.clone());
+    if filename.is_absolute() {
+        if let Some(s) = filename.to_str() {
+            return Ok(s.to_string());
+        }
+    }
+
+    for search_path in search_paths {
+        let mut path = PathBuf::new();
+        path.push(search_path);
+        path.push(filename.clone());
+
+        if path.exists() {
+            if let Some(s) = path.to_str() {
+                return Ok(s.to_string());
+            }
+        }
+    }
+
+    return Err(EvaluationError::FileLoad {
+        source: std::io::Error::from(std::io::ErrorKind::NotFound),
+        filename: name,
+    });
 }
 
 pub fn read_file<P: AsRef<Path>>(path: P) -> Result<String> {
@@ -562,7 +595,8 @@ fn builtin_len(mut state: State) -> Result<State> {
 }
 
 fn builtin_load(mut state: State) -> Result<State> {
-    let filename = get_string(&checked_pop!(state))?;
+    let name = get_string(&checked_pop!(state))?;
+    let filename = find_file(&state.search_paths, name)?;
 
     let content = read_file(filename.clone())?;
 
@@ -974,6 +1008,7 @@ pub struct State {
     pub t0: Instant,
     pub counter: (usize, usize),
     pub location: lexer::Location,
+    pub search_paths: Vec<String>,
 
     pub stack: Vec<ParseNode>,
     pub program: Vec<ParseNode>,
@@ -1052,6 +1087,7 @@ impl State {
             t0: Instant::now(),
             counter: (0usize, 0usize),
             location: lexer::Location::Source(0usize, 0usize),
+            search_paths: vec!["lib".to_string(), ".".to_string()],
             stack: Vec::with_capacity(64),
             symbols: sm,
             definitions: defs,
@@ -1064,6 +1100,7 @@ impl State {
             t0: s.t0,
             counter: s.counter,
             location: s.location,
+            search_paths: s.search_paths,
             stack: s.stack,
             symbols: s.symbols,
             definitions: s.definitions,
