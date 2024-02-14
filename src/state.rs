@@ -5,7 +5,7 @@ use crate::{lexer, parser, sym};
 use rand::{Rng, SeedableRng};
 use rand_chacha::ChaCha20Rng;
 use snafu::{ResultExt, Snafu};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::ops::Index;
 use std::path::{Path, PathBuf};
 use std::result;
@@ -598,6 +598,13 @@ fn builtin_load(mut state: State) -> Result<State> {
     let name = get_string(&checked_pop!(state))?;
     let filename = find_file(&state.search_paths, name)?;
 
+    if state.loaded_files.contains(&filename) {
+        return Err(EvaluationError::GuardViolation {
+            reason: format!("{filename:?} is already loaded").to_string(),
+        });
+    }
+    state.loaded_files.insert(filename.clone());
+
     let content = read_file(filename.clone())?;
 
     let size = content.len();
@@ -1008,6 +1015,7 @@ pub struct State {
     pub t0: Instant,
     pub counter: (usize, usize),
     pub location: lexer::Location,
+    pub loaded_files: HashSet<String>,
     pub search_paths: Vec<String>,
 
     pub stack: Vec<ParseNode>,
@@ -1087,6 +1095,7 @@ impl State {
             t0: Instant::now(),
             counter: (0usize, 0usize),
             location: lexer::Location::Source(0usize, 0usize),
+            loaded_files: Default::default(),
             search_paths: vec!["lib".to_string(), ".".to_string()],
             stack: Vec::with_capacity(64),
             symbols: sm,
@@ -1100,6 +1109,7 @@ impl State {
             t0: s.t0,
             counter: s.counter,
             location: s.location,
+            loaded_files: s.loaded_files,
             search_paths: s.search_paths,
             stack: s.stack,
             symbols: s.symbols,
