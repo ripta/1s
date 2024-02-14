@@ -54,4 +54,25 @@
 -- Example: 0 5 [ 6 + ] [ 0 0 0 0 0 ] collect == [ 6 7 8 9 10 ]
 --          5 [ 6 + ] [ 0 0 0 0 0 ] 0,collect == [ 6 7 8 9 10 ]
 [ 3bury collect-into* upto ] [ collect ] :
-[ 2bury collect-into* 0,upto ] [ 0,collect ] :
+[ collect-into 0,upto ] [ 0,collect ] :
+
+-- Repeated accumulation
+-- LOWERBOUND UPPERBOUND [QUOTE] [SEQ] accumulate == [SEQ']
+-- UPPERBOUND [QUOTE] [SEQ] 0,accumulate == [SEQ']
+--
+-- `accumulate` (or `acc` for short) repeatedly accumulates QUOTE into SEQ,
+-- forming SEQ', without evaluating QUOTE.
+--
+-- Example: [ + ] 3 [ * ] accumulate-into* i == [ + * ]
+--          0 5 [ + ] [] accumulate == [ + + + + + ]
+--          5 [ + ] [] 0,accumulate == [ + + + + + ]
+[ [ swap zap cat ] cons ] [ accumulate-into* ] :
+[ 2bury accumulate-into* ] [ accumulate-into ] :
+[ 3bury accumulate-into* upto ] [ accumulate acc ] :
+[ accumulate-into 0,upto ] [ 0,accumulate 0,acc ] :
+
+-- Repeated quotation
+-- NUM [QUOTE] repquot == [SEQ]
+--
+-- Example: 5 [ + ] repquot == [ + + + + + ]
+[ [] 0,accumulate ] [ repquot ] :
