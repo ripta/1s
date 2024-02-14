@@ -306,9 +306,16 @@
 -- `if` is a native implementation of a primitive branching construct.
 --
 -- `if*` is a convenience word built on `if`, where the conditional is preserved when true.
+--
 -- C [B*] [A*] if* == C dup [B*] [zap A*] if
 --
 -- `when` evaluates the quoted block when COND is #true.
+--
+-- Example: #true  [ 1 ] [ 2 ] if == 1
+--          #false [ 1 ] [ 2 ] if == 2
+--
+-- Example: #true  [ 1 ] [ 2 ] if* == #true 1
+--          #false [ 1 ] [ 2 ] if* == 2
 [ {IF} ] [ if ] :
 [ dup2 [ zap i ] [ 2zap1 i ] if ] [ if* ] :
 [ swap [ i ] [ zap ] if ] [ when ] :
@@ -332,6 +339,14 @@
 [ [ 0 ] 2dip upto ] [ 0,upto ] :
 [ [ zap ] swat 0,upto ] [ times ] :
 [ dup 2dip ] [ once ] :
+
+-- NUM [BLOCK*] run/n
+--
+-- `run/n` is a generalized repetitive run, which invokes `run` NUM times.
+--
+-- Example: 0 [ 3 5 + ] run/n == [ 3 5 + ]
+--          3 [ 3 5 + ] run/n == 8 8 8 [ 3 5 + ]
+[ swap [ run ] times ] [ run/n ] :
 
 -- Looping
 --
