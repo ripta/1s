@@ -44,7 +44,8 @@ pub fn run_state(mut s: State, trace_exec: bool) -> Result<State> {
             println!("Step {:?}", s.counter);
             println!("  Stack: ");
             for st in &s.stack {
-                println!("    {}", st);
+                print!("    ");
+                builtin_show_node(&s.symbols, st.clone())?;
             }
             println!("  Program: {:?}", s.program);
 
@@ -803,7 +804,7 @@ fn builtin_show(mut state: State) -> Result<State> {
     return Ok(state);
 }
 
-fn builtin_show_node(symbols: &sym::SymbolManager, node: ParseNode) -> Result<()> {
+pub fn builtin_show_node(symbols: &sym::SymbolManager, node: ParseNode) -> Result<()> {
     match node.kind {
         ParseKind::FloatValue(f) => {
             eprint!("{} ", f);
@@ -831,9 +832,11 @@ fn builtin_show_node(symbols: &sym::SymbolManager, node: ParseNode) -> Result<()
         },
 
         ParseKind::Block(nodes) => {
+            eprint!("[ ");
             for node in nodes {
                 builtin_show_node(symbols, node)?;
             }
+            eprint!("] ");
             Ok(())
         }
 

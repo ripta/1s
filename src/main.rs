@@ -119,7 +119,9 @@ fn run(flags: Flags) -> Result<u8> {
                             } else {
                                 println!("Stack:");
                                 for st in &ns.stack {
-                                    println!("  {}", st);
+                                    eprint!("  ");
+                                    state::builtin_show_node(&ns.symbols, st.clone())?;
+                                    println!();
                                 }
                             }
                             state = ns;
