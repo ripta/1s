@@ -1,3 +1,5 @@
+[ {LOAD} ] [ load ] :
+
 "prelude" {LOAD}
 "math" {LOAD}
 "seq" {LOAD}
