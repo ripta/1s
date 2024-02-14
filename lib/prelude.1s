@@ -335,6 +335,7 @@
 -- Example: 0 5 [ 2 * ] upto == 0 2 4 6 8
 --          5 [ 2 * ] 0,upto == 0 2 4 6 8
 --          3 [ 5 ] times == 5 5 5
+--          10 2 [ 2 * ] once == 20 2 [ 2 * ]
 [ 2dup1 lt? [ [ swap zap i ] 3keep [ 1 + ] 2dip upto ] [ zap zap zap ] if ] [ upto ] :
 [ [ 0 ] 2dip upto ] [ 0,upto ] :
 [ [ zap ] swat 0,upto ] [ times ] :
