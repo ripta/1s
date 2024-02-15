@@ -166,3 +166,9 @@ impl SymbolManager {
         }
     }
 }
+
+impl Default for SymbolManager {
+    fn default() -> Self {
+        return Self::new();
+    }
+}
