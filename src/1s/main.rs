@@ -1,14 +1,11 @@
-mod lexer;
-mod parser;
-mod state;
-mod sym;
-
-use crate::lexer::Location;
-use crate::parser::{ParseKind, ParseNode};
+use one_stack;
+use one_stack::lexer::Location;
+use one_stack::parser::{ParseKind, ParseNode};
+use one_stack::state;
+use one_stack::state::{EvaluationError, State};
 use rustyline::error::ReadlineError;
 use rustyline::DefaultEditor;
 use snafu::prelude::*;
-use state::{EvaluationError, State};
 use std::iter::Iterator;
 use std::result;
 use std::string::ToString;
@@ -79,7 +76,7 @@ impl From<ReadlineError> for Error {
 type Result<T> = result::Result<T, Error>;
 
 fn run(flags: Flags) -> Result<u8> {
-    let mut sm = sym::SymbolManager::new();
+    let mut sm = one_stack::sym::SymbolManager::new();
     sm.set_trace(flags.trace_load);
 
     let mut state = State::new(sm);

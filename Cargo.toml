@@ -21,4 +21,8 @@ lto = true
 
 [[bin]]
 name = "1s"
-path = "src/main.rs"
+path = "src/1s/main.rs"
+
+[lib]
+name = "one_stack"
+path = "src/lib.rs"
