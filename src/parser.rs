@@ -10,7 +10,7 @@ pub struct ParseTree {
     pub top_level: Vec<ParseNode>,
 }
 
-#[derive(Debug, Clone, Hash)]
+#[derive(Debug, Clone)]
 pub struct ParseNode {
     pub kind: ParseKind,
     pub location: lexer::Location,
@@ -40,6 +40,12 @@ impl Display for ParseNode {
 impl PartialEq for ParseNode {
     fn eq(&self, other: &Self) -> bool {
         return self.kind == other.kind;
+    }
+}
+
+impl Hash for ParseNode {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        return self.kind.hash(state);
     }
 }
 
