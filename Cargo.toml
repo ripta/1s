@@ -7,13 +7,17 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+getrandom = { features = ["js"] }
 pico-args = "0.5.0"
-rustyline = "13.0.0"
+rustyline = { version = "13.0.0", optional = true }
 snafu = "0.8.0"
 log = "0.4.20"
 string-interner = "0.14.0"
 rand = "0.8.5"
 rand_chacha = "0.3.1"
+
+[features]
+readline = ["rustyline"]
 
 [profile.release]
 strip = true
@@ -22,6 +26,7 @@ lto = true
 [[bin]]
 name = "1s"
 path = "src/1s/main.rs"
+required-features = ["readline"]
 
 [lib]
 crate-type = ["cdylib", "lib"]
