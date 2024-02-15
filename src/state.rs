@@ -292,7 +292,7 @@ fn builtin_cdr(mut state: State) -> Result<State> {
     let mut a = get_block(checked_pop!(state))?;
 
     // `cdr` of an empty block is itself an empty block, so ignore removal of an already empty block
-    if a.len() > 0 {
+    if !a.is_empty() {
         state.stack.push(a.remove(0));
     }
 
