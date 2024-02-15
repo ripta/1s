@@ -22,3 +22,6 @@ test:
 
 update-golden:
 	./scripts/gauntlet.sh -u
+
+wasm:
+	wasm-pack build
