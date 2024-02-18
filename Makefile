@@ -24,4 +24,9 @@ update-golden:
 	./scripts/gauntlet.sh -u
 
 wasm:
-	wasm-pack build -t web
+	wasm-pack build --features console_error_panic_hook
+
+.PHONY: web
+web:
+	yarn --cwd web install
+	yarn --cwd web dev
