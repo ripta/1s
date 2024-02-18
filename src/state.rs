@@ -10,8 +10,8 @@ use std::hash::{DefaultHasher, Hash, Hasher};
 use std::ops::Index;
 use std::path::{Path, PathBuf};
 use std::result;
-use std::time::Instant;
 use string_interner::DefaultSymbol;
+use web_time::Instant;
 
 pub fn run_string(mut state: State, content: String, trace_exec: bool) -> Result<State> {
     let tokens = lexer::lex(content)?;
