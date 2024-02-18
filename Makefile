@@ -4,6 +4,9 @@ build-debug:
 build-release:
 	cargo build --release --bin 1s --features readline
 
+build-web: wasm
+	yarn --cwd web build
+
 fix:
 	cargo clippy --fix --bin "1s" --allow-dirty --allow-staged -- -A clippy::needless_return
 
@@ -30,3 +33,7 @@ wasm:
 web:
 	yarn --cwd web install
 	yarn --cwd web dev
+
+.PHONY: web-opt
+web-opt: build-web
+	safron -path=web/dist

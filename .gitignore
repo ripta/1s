@@ -1,7 +1,8 @@
 .vite
 /.idea
+/pkg
 /target
+/web/dist
 history.txt
 node_modules
-pkg
 yarn-error.log

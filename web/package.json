@@ -4,6 +4,7 @@
   "main": "bootstrap.js",
   "license": "MIT",
   "scripts": {
+    "build": "vite build",
     "dev": "vite"
   },
   "dependencies": {
