@@ -1,16 +1,17 @@
 {
   "name": "one_stack_web",
   "version": "0.1.0",
-  "main": "index.js",
+  "main": "bootstrap.js",
   "license": "MIT",
   "scripts": {
     "dev": "vite"
   },
   "dependencies": {
-    "one_stack": "file:../pkg"
+    "one_stack": "link:../pkg"
   },
   "devDependencies": {
     "vite": "^5.1.3",
-    "vite-plugin-wasm-pack": "^0.1.12"
+    "vite-plugin-top-level-await": "^1.4.1",
+    "vite-plugin-wasm": "^3.3.0"
   }
 }
