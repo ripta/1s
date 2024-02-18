@@ -5,11 +5,13 @@ console.log(d);
 
 $("input#run").on("click", function(evt) {
   const code = $("textarea#code").val();
-  console.log("Code:", code);
-  console.log("Run:", d.run_string(code));
+
+  d.run_string(code);
+
+  $("#stack").html(d.render_stack().replaceAll("\n", "<br>"));
   if (d.has_error()) {
-    console.log("Err:", d.error_string());
+    $("div#status").html("Error: " + d.error_string());
   } else {
-    console.log("OK");
+    $("div#status").html("OK");
   }
 });
