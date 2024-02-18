@@ -1,15 +1,16 @@
 {
-  "name": "one_stack",
+  "name": "one_stack_web",
   "version": "0.1.0",
-  "license": "SEE LICENSE IN LICENSE",
-  "files": [
-    "one_stack_bg.wasm",
-    "one_stack.js",
-    "one_stack.d.ts"
-  ],
-  "module": "one_stack.js",
-  "types": "one_stack.d.ts",
-  "sideEffects": [
-    "./snippets/*"
-  ]
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite"
+  },
+  "dependencies": {
+    "one_stack": "file:../pkg"
+  },
+  "devDependencies": {
+    "vite": "^5.1.3",
+    "vite-plugin-wasm-pack": "^0.1.12"
+  }
 }
