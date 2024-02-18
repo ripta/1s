@@ -57,7 +57,7 @@ pub fn run_state(mut s: State, trace_exec: bool) -> Result<State> {
     return Ok(s);
 }
 
-pub fn dump_definitions(definitions: HashMap<String, Code>) -> Vec<String> {
+fn dump_definitions(definitions: HashMap<String, Code>) -> Vec<String> {
     let mut def_names: Vec<String> = Vec::with_capacity(definitions.len());
     for def_name in definitions.keys() {
         def_names.push(def_name.to_string());
@@ -1145,16 +1145,17 @@ pub enum Code {
 
 #[derive(Debug, Clone)]
 pub struct State {
-    pub t0: Instant,
     pub counter: (usize, usize),
-    pub location: lexer::Location,
-    pub loaded_files: HashSet<String>,
-    pub search_paths: Vec<String>,
 
-    pub stack: Vec<ParseNode>,
-    pub program: Vec<ParseNode>,
-    pub symbols: SymbolManager,
-    pub definitions: HashMap<String, Code>,
+    t0: Instant,
+    location: lexer::Location,
+    loaded_files: HashSet<String>,
+    search_paths: Vec<String>,
+
+    stack: Vec<ParseNode>,
+    program: Vec<ParseNode>,
+    symbols: SymbolManager,
+    definitions: HashMap<String, Code>,
 }
 
 impl State {
@@ -1261,6 +1262,20 @@ impl State {
             definitions: defs,
             program: Vec::with_capacity(64),
         };
+    }
+
+    pub fn is_stack_empty(&self) -> bool {
+        return self.stack.is_empty();
+    }
+
+    pub fn show_definitions(&self) -> Result<()> {
+        println!("Defined words: {:?}", dump_definitions(self.definitions.clone()));
+        return Ok(());
+    }
+
+    pub fn show_stack(&self) -> Result<()> {
+        builtin_show_nodes(&self.symbols, &self.stack)?;
+        return Ok(());
     }
 
     pub fn with(s: State, tl: Vec<ParseNode>) -> State {

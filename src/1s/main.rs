@@ -118,34 +118,24 @@ fn run(flags: Flags) -> Result<u8> {
 
                     match state::run_string(state.clone(), line, flags.trace_exec) {
                         Ok(ns) => {
-                            if ns.stack.is_empty() {
+                            if ns.is_stack_empty() {
                                 println!("Empty Stack");
                             } else {
                                 println!("Stack:");
-                                for st in &ns.stack {
-                                    eprint!("  ");
-                                    state::builtin_show_node(&ns.symbols, &st)?;
-                                    println!();
-                                }
+                                ns.show_stack()?;
                             }
                             state = ns;
                         }
                         Err(EvaluationError::UndefinedWord { word, location: _ }) => {
                             println!("Error: word '{word}' is undefined");
-                            println!(
-                                "Defined words: {:?}",
-                                state::dump_definitions(state.clone().definitions)
-                            );
                         }
                         Err(e) => {
                             println!("Error: {}", e);
-                            if state.stack.is_empty() {
+                            if state.is_stack_empty() {
                                 println!("Empty Stack");
                             } else {
                                 println!("Stack:");
-                                for st in &state.stack {
-                                    println!("  {}", st);
-                                }
+                                state.show_stack()?;
                             }
                         }
                     }
@@ -169,11 +159,8 @@ fn run(flags: Flags) -> Result<u8> {
 
         reader.save_history(history_path)?;
     } else {
-        // println!("RESULT {:?}", state.stack);
         println!("Result:");
-        for item in state.stack {
-            println!("  {}", item);
-        }
+        state.show_stack()?;
         // println!("Statistics: {:?}", state.counter);
     }
 
