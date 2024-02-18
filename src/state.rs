@@ -89,7 +89,7 @@ pub enum EvaluationError {
     #[snafu(display("{op}: cannot operate on {value}"))]
     CannotOperate { op: String, value: ParseNode },
     #[snafu(display("word '{word}' is undefined"))]
-    UndefinedWord { word: String, location: lexer::Location },
+    UndefinedWord { word: String, location: Location },
 }
 
 impl From<lexer::LexerError> for EvaluationError {
@@ -1153,7 +1153,7 @@ pub enum Code {
 pub struct State {
     t0: Instant,
     counter: (usize, usize),
-    location: lexer::Location,
+    location: Location,
     loaded_files: HashSet<String>,
     search_paths: Vec<String>,
 
@@ -1259,7 +1259,7 @@ impl State {
         return State {
             t0: Instant::now(),
             counter: (0usize, 0usize),
-            location: lexer::Location::Source(0usize, 0usize),
+            location: Location::Source(0usize, 0usize),
             loaded_files: Default::default(),
             search_paths: vec!["lib".to_string(), ".".to_string()],
             stack: Vec::with_capacity(64),
