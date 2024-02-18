@@ -1,8 +1,8 @@
 build-debug:
-	cargo build
+	cargo build --bin 1s --features readline
 
 build-release:
-	cargo build --release
+	cargo build --release --bin 1s --features readline
 
 fix:
 	cargo clippy --fix --bin "1s" --allow-dirty --allow-staged -- -A clippy::needless_return

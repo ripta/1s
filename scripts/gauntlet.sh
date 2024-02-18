@@ -7,7 +7,8 @@ set -euo pipefail
 
 do:build() {
   local rv=0
-  cargo build 2>&1 || rv=$?
+  TIMEFORMAT="BUILD %2Rs"
+  time make build-debug 2>&1 || rv=$?
   return $rv
 }
 
@@ -23,7 +24,7 @@ while getopts "u" arg; do
 done
 
 if res=$(do:build); then
-  echo "BUILD"
+  echo "OK do:build"
 else
   echo "$res"
   echo "ERROR do:build"
