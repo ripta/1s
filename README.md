@@ -4,7 +4,24 @@ A toy implementation of a stack-oriented language, where I keep the syntax and
 native (rust) implementation minimal. There is a prelude, `lib/prelude.1s`,
 that contains definitions in 1s.
 
-1s is named so, because it has a single primary memory stack.
+1s is named so, because it has a single primary memory stack. It is also
+referred to as `one_stack` in parts of the codebase that require a valid
+identifier that starts with an alpha character.
+
+The entrypoint is its Makefile, which contains a few useful targets:
+
+```
+# To run the rust REPL with a basis library:
+make repl
+
+# To run the rust REPL with optimizations:
+make repl-opt
+
+# To run a wasm32 REPL in your browser, you'll need to build the wasm32 code
+# ("wasm") and start the development server ("web"):
+make wasm web
+```
+
 
 ## Stack
 
