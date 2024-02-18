@@ -6,6 +6,7 @@ use rand::{Rng, SeedableRng};
 use rand_chacha::ChaCha20Rng;
 use snafu::{ResultExt, Snafu};
 use std::collections::{HashMap, HashSet};
+use std::fmt::Write;
 use std::hash::{DefaultHasher, Hash, Hasher};
 use std::ops::Index;
 use std::path::{Path, PathBuf};
@@ -44,10 +45,10 @@ pub fn run_state(mut s: State, trace_exec: bool) -> Result<State> {
         if trace_exec {
             println!("Step {:?}", s.counter);
             println!("  Stack: ");
-            builtin_show_nodes(&s.symbols, &s.stack)?;
+            s.show_stack()?;
 
-            println!("  Program:");
-            builtin_show_nodes(&s.symbols, &s.program)?;
+            // println!("  Program:");
+            // render_nodes(&s.symbols, &s.program)?;
 
             // println!("  Definitions: {:?}", dump_definitions(s.clone().definitions));
             println!();
@@ -78,6 +79,8 @@ pub enum EvaluationError {
     FileLoad { source: std::io::Error, filename: String },
     #[snafu(display("lexing error: {source}"))]
     LexingError { source: lexer::LexerError },
+    #[snafu(display("render error: {source}"))]
+    RenderError { source: std::fmt::Error },
     #[snafu(display("unclosed string"))]
     UnclosedString,
     #[snafu(display("incompatible value on stack: expected '{expected}', but found '{found}'"))]
@@ -95,6 +98,12 @@ pub enum EvaluationError {
 impl From<lexer::LexerError> for EvaluationError {
     fn from(value: lexer::LexerError) -> Self {
         return EvaluationError::LexingError { source: value };
+    }
+}
+
+impl From<std::fmt::Error> for EvaluationError {
+    fn from(value: std::fmt::Error) -> Self {
+        return EvaluationError::RenderError { source: value };
     }
 }
 
@@ -906,26 +915,27 @@ fn builtin_stack_empty(state: State) -> Result<State> {
 
 fn builtin_show(mut state: State) -> Result<State> {
     let node = checked_pop!(state);
-    builtin_show_node(&state.symbols, &node, 0)?;
-    println!();
+    let mut buf = String::new();
+    render_node(&mut buf, &state.symbols, &node, 0)?;
+    println!("{}", buf);
     return Ok(state);
 }
 
 fn builtin_show_stack(state: State) -> Result<State> {
-    builtin_show_nodes(&state.symbols, &state.stack)?;
+    state.show_stack()?;
     return Ok(state);
 }
 
-fn builtin_show_nodes(symbols: &SymbolManager, nodes: &Vec<ParseNode>) -> Result<()> {
+fn render_nodes(buf: &mut String, symbols: &SymbolManager, nodes: &Vec<ParseNode>) -> Result<()> {
     for node in nodes {
-        print!("  ");
-        builtin_show_node(symbols, node, 0)?;
-        println!();
+        buf.push_str("  ");
+        render_node(buf, symbols, node, 0)?;
+        buf.push('\n');
     }
     Ok(())
 }
 
-pub fn builtin_show_node(symbols: &SymbolManager, node: &ParseNode, depth: usize) -> Result<()> {
+fn render_node(buf: &mut String, symbols: &SymbolManager, node: &ParseNode, depth: usize) -> Result<()> {
     let mut sep = "";
     if depth > 0 {
         sep = " ";
@@ -933,17 +943,17 @@ pub fn builtin_show_node(symbols: &SymbolManager, node: &ParseNode, depth: usize
 
     match &node.kind {
         ParseKind::FloatValue(f) => {
-            print!("{}{}", f, sep);
+            write!(buf, "{}{}", f, sep)?;
             Ok(())
         }
 
         ParseKind::IntegerValue(i) => {
-            print!("{}{}", i, sep);
+            write!(buf, "{}{}", i, sep)?;
             Ok(())
         }
 
         ParseKind::StringValue(s) => {
-            print!("{:?}{}", s, sep);
+            write!(buf, "{:?}{}", s, sep)?;
             Ok(())
         }
 
@@ -952,22 +962,22 @@ pub fn builtin_show_node(symbols: &SymbolManager, node: &ParseNode, depth: usize
                 reason: "!!BUG!! symbol should have existed, but doesn't".to_string(),
             }),
             Some(s) => {
-                print!("#{}{}", s, sep);
+                write!(buf, "#{}{}", s, sep)?;
                 Ok(())
             }
         },
 
         ParseKind::Block(nodes) => {
-            print!("[ ");
+            write!(buf, "[ ")?;
             for node in nodes {
-                builtin_show_node(symbols, node, depth + 1)?;
+                render_node(buf, symbols, node, depth + 1)?;
             }
-            print!("]{}", sep);
+            write!(buf, "]{}", sep)?;
             Ok(())
         }
 
         ParseKind::WordRef(word) => {
-            print!("{}{}", word, sep);
+            write!(buf, "{}{}", word, sep)?;
             Ok(())
         }
     }
@@ -1278,8 +1288,16 @@ impl State {
         return Ok(());
     }
 
+    pub fn render_stack(&self, buf: &mut String) -> Result<()> {
+        render_nodes(buf, &self.symbols, &self.stack)?;
+        return Ok(());
+    }
+
     pub fn show_stack(&self) -> Result<()> {
-        builtin_show_nodes(&self.symbols, &self.stack)?;
+        let mut buf = String::new();
+        self.render_stack(&mut buf)?;
+        println!("{}", buf);
+
         return Ok(());
     }
 
