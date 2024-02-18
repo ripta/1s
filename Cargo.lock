@@ -181,6 +181,7 @@ dependencies = [
  "rustyline",
  "snafu",
  "string-interner",
+ "wasm-bindgen",
 ]
 
 [[package]]
