@@ -906,8 +906,8 @@ fn builtin_stack_empty(state: State) -> Result<State> {
 
 fn builtin_show(mut state: State) -> Result<State> {
     let node = checked_pop!(state);
-    builtin_show_node(&state.symbols, &node)?;
-    eprintln!();
+    builtin_show_node(&state.symbols, &node, 0)?;
+    println!();
     return Ok(state);
 }
 
@@ -918,26 +918,32 @@ fn builtin_show_stack(state: State) -> Result<State> {
 
 fn builtin_show_nodes(symbols: &SymbolManager, nodes: &Vec<ParseNode>) -> Result<()> {
     for node in nodes {
-        builtin_show_node(symbols, node)?;
+        print!("  ");
+        builtin_show_node(symbols, node, 0)?;
+        println!();
     }
-    eprintln!();
     Ok(())
 }
 
-pub fn builtin_show_node(symbols: &SymbolManager, node: &ParseNode) -> Result<()> {
+pub fn builtin_show_node(symbols: &SymbolManager, node: &ParseNode, depth: usize) -> Result<()> {
+    let mut sep = "";
+    if depth > 0 {
+        sep = " ";
+    }
+
     match &node.kind {
         ParseKind::FloatValue(f) => {
-            eprint!("{} ", f);
+            print!("{}{}", f, sep);
             Ok(())
         }
 
         ParseKind::IntegerValue(i) => {
-            eprint!("{} ", i);
+            print!("{}{}", i, sep);
             Ok(())
         }
 
         ParseKind::StringValue(s) => {
-            eprint!("{:?} ", s);
+            print!("{:?}{}", s, sep);
             Ok(())
         }
 
@@ -946,22 +952,22 @@ pub fn builtin_show_node(symbols: &SymbolManager, node: &ParseNode) -> Result<()
                 reason: "!!BUG!! symbol should have existed, but doesn't".to_string(),
             }),
             Some(s) => {
-                eprint!("#{} ", s);
+                print!("#{}{}", s, sep);
                 Ok(())
             }
         },
 
         ParseKind::Block(nodes) => {
-            eprint!("[ ");
+            print!("[ ");
             for node in nodes {
-                builtin_show_node(symbols, node)?;
+                builtin_show_node(symbols, node, depth + 1)?;
             }
-            eprint!("] ");
+            print!("]{}", sep);
             Ok(())
         }
 
         ParseKind::WordRef(word) => {
-            eprint!("{} ", word);
+            print!("{}{}", word, sep);
             Ok(())
         }
     }

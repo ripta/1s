@@ -21,7 +21,7 @@ fn main() {
     }
 
     if let Err(e) = run(flags.unwrap()) {
-        println!("Error: {}", e);
+        eprintln!("Error: {}", e);
         std::process::exit(1);
     }
 }
