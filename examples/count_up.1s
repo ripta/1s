@@ -1,0 +1,5 @@
+-- `count_up` counts from 1 to 15 in increments of 2, and prints the value at
+-- the top of the stack on every cycle. At the end of the iteration, two 15s
+-- are left on the stack.
+
+15 1 [ 2dup gt? ] [ show 2 + ] while 2zap
