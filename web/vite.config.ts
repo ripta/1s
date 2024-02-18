@@ -1,12 +1,14 @@
 import { defineConfig } from "vite";
-import wasmPack from "vite-plugin-wasm-pack";
+import wasm from "vite-plugin-wasm";
+import topLevelAwait from "vite-plugin-top-level-await";
 
 export default defineConfig({
-  base: "/one-stack-web/dist/",
+  base: "/one-stack-web/",
   build: {
     minify: false,
   },
   plugins: [
-    // wasmPack(["../"]),
+    wasm(),
+    topLevelAwait(),
   ],
 });
