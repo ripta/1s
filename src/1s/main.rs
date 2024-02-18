@@ -106,9 +106,12 @@ fn run(flags: Flags) -> Result<u8> {
             println!("No previous interactive session history.");
         }
 
+        let mut line_num = 0;
+
         println!("Entering interactive session; ^D to exit");
         loop {
-            match reader.readline(&format!("1s:{:?}> ", state.counter)) {
+            line_num += 1;
+            match reader.readline(&format!("1s:{}> ", line_num)) {
                 Ok(line) => {
                     if line.is_empty() {
                         continue;

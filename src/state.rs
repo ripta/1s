@@ -1151,9 +1151,8 @@ pub enum Code {
 
 #[derive(Debug, Clone)]
 pub struct State {
-    pub counter: (usize, usize),
-
     t0: Instant,
+    counter: (usize, usize),
     location: lexer::Location,
     loaded_files: HashSet<String>,
     search_paths: Vec<String>,
