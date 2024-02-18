@@ -1158,7 +1158,11 @@ pub struct State {
 }
 
 impl State {
-    pub fn new(sm: SymbolManager) -> State {
+    pub fn new() -> State {
+        return Self::new_with_symbol_manager(SymbolManager::default());
+    }
+
+    pub fn new_with_symbol_manager(sm: SymbolManager) -> State {
         let mut defs = HashMap::with_capacity(64);
 
         defs.insert("{:}".to_string(), Code::Native("{:}".to_string(), builtin_define));

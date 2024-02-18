@@ -79,7 +79,7 @@ fn run(flags: Flags) -> Result<u8> {
     let mut sm = one_stack::sym::SymbolManager::new();
     sm.set_trace(flags.trace_load);
 
-    let mut state = State::new(sm);
+    let mut state = State::new_with_symbol_manager(sm);
     if !flags.no_banner {
         println!("-- 1s :: {} v{}", PKG_NAME, PKG_VERSION);
     }
