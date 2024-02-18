@@ -1,0 +1,15 @@
+{
+  "name": "one_stack",
+  "version": "0.1.0",
+  "license": "SEE LICENSE IN LICENSE",
+  "files": [
+    "one_stack_bg.wasm",
+    "one_stack.js",
+    "one_stack.d.ts"
+  ],
+  "module": "one_stack.js",
+  "types": "one_stack.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}
