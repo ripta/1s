@@ -48,5 +48,9 @@ impl Driver {
         }
     }
 
-    pub fn show_stack(&self) {}
+    pub fn render_stack(&self) -> String {
+        let mut s = String::new();
+        let _ = self.state.render_stack(&mut s);
+        return s;
+    }
 }
