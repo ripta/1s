@@ -3,6 +3,8 @@ name = "one_stack"
 license-file = "LICENSE"
 version = "0.1.0"
 edition = "2021"
+description = "Stack-oriented toy programming language that is peak inefficient"
+repository = "https://github.com/ripta/1s"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
