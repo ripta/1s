@@ -1316,6 +1316,12 @@ impl State {
     }
 }
 
+impl Default for State {
+    fn default() -> Self {
+        return Self::new();
+    }
+}
+
 pub fn eval(mut state: State) -> Result<State> {
     let item = state.program.pop().ok_or(EvaluationError::StackUnderflow)?;
 

@@ -54,3 +54,9 @@ impl Driver {
         return s;
     }
 }
+
+impl Default for Driver {
+    fn default() -> Self {
+        return Self::new();
+    }
+}
