@@ -7,6 +7,8 @@ build-release:
 build-web: wasm
 	yarn --cwd web build
 
+ci: lint build-release wasm
+
 fix:
 	cargo clippy --fix --bin "1s" --allow-dirty --allow-staged -- -A clippy::needless_return
 
